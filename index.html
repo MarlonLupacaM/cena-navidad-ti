@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Caja Arequipa | Votación Oficial Cena Navideña 2026</title>
+    <!-- Google Fonts Nunito (Exact font from CajaWeb) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+
+    <!-- Preload primary venue cover images for instant rendering -->
+    <link rel="preload" as="image" href="./parrillero/imagen (16).jpg" fetchpriority="high" />
+    <link rel="preload" as="image" href="./donfacu/imagen (1).jpg" fetchpriority="high" />
+    <link rel="preload" as="image" href="./quin/imagen (26).jpg" />
+    <link rel="preload" as="image" href="./montonero/imagen (11).jpg" />
+    <link rel="preload" as="image" href="./sol/imagen (6).jpg" />
+
+    <!-- Anti-Netlify Watermark & Drawer Suppressor -->
+    <style>netlify-drawer,[data-netlify-drawer],[data-netlify-badge],.netlify-drawer,.netlify-badge,#netlify-drawer,#netlify-feedback,.__netlify-feedback-badge,iframe[src*=netlify],iframe[id*=netlify],div[class*=netlify-drawer],div[id*=netlify-drawer],div[class*=netlify-feedback],div[id*=netlify-feedback]{visibility:hidden!important;opacity:0!important;pointer-events:none!important;z-index:-9999!important;width:0!important;max-width:0!important;height:0!important;max-height:0!important;display:none!important;position:absolute!important;top:-9999px!important;left:-9999px!important;overflow:hidden!important}</style>
+    <script>
+      (function() {
+        function removeNetlifyElements() {
+          var selectors = [
+            'netlify-drawer',
+            '[data-netlify-drawer]',
+            '[data-netlify-badge]',
+            '.netlify-drawer',
+            '.netlify-badge',
+            '#netlify-drawer',
+            '#netlify-feedback',
+            '.__netlify-feedback-badge',
+            'iframe[src*="netlify"]',
+            'iframe[id*="netlify"]',
+            'script[src*="netlify-cdp"]',
+            'script[src*="netlify-feedback"]',
+            'div[class*="netlify-drawer"]',
+            'div[id*="netlify-drawer"]',
+            'div[class*="netlify-feedback"]',
+            'div[id*="netlify-feedback"]'
+          ];
+          try {
+            selectors.forEach(function(sel) {
+              document.querySelectorAll(sel).forEach(function(el) {
+                el.remove();
+              });
+            });
+          } catch(e) {}
+        }
+        if (typeof window !== 'undefined') {
+          if (typeof MutationObserver !== 'undefined') {
+            new MutationObserver(removeNetlifyElements).observe(document.documentElement, {
+              childList: true,
+              subtree: true
+            });
+          }
+          document.addEventListener('DOMContentLoaded', removeNetlifyElements);
+          window.addEventListener('load', removeNetlifyElements);
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-BylS3D9U.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-K9Plq6Tl.css">
+  </head>
+  <body class="bg-[#F4F7FB] text-slate-800 antialiased font-sans">
+    <div id="root"></div>
+  </body>
+</html>
