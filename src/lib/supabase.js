@@ -184,22 +184,38 @@ export async function checkEmployeeHasVotedDish(param) {
 }
 
 /**
- * Registra el voto del colaborador para el paquete de comida
+ * Registra el voto del colaborador para el paquete de comida con sus elecciones específicas
  */
-export async function insertDishVote({ employeeCode, email, packageId, packageTitle }) {
+export async function insertDishVote({
+  employeeCode,
+  email,
+  packageId,
+  packageTitle,
+  selectedDish,
+  selectedSide,
+  selectedDrink,
+  selectedOptions
+}) {
   try {
+    const payload = {
+      employee_code: employeeCode.trim(),
+      email: email.trim(),
+      package_id: packageId,
+      package_title: packageTitle
+    };
+
+    if (selectedDish) payload.selected_dish = selectedDish;
+    if (selectedSide) payload.selected_side = selectedSide;
+    if (selectedDrink) payload.selected_drink = selectedDrink;
+    if (selectedOptions) payload.selected_options = selectedOptions;
+
     const res = await fetch(`${SUPABASE_URL}/rest/v1/dish_votes`, {
       method: 'POST',
       headers: {
         ...headers,
         Prefer: 'return=minimal'
       },
-      body: JSON.stringify({
-        employee_code: employeeCode.trim(),
-        email: email.trim(),
-        package_id: packageId,
-        package_title: packageTitle
-      })
+      body: JSON.stringify(payload)
     });
 
     if (!res.ok) {

@@ -20,6 +20,17 @@ export default function DishVoteConfirmationModal({
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Inicializar las elecciones de platos / bebidas / guarniciones con los valores por defecto
+  const [selections, setSelections] = useState(() => {
+    const initial = {};
+    if (pkg.selectableOptions && pkg.selectableOptions.length > 0) {
+      pkg.selectableOptions.forEach((opt) => {
+        initial[opt.id] = opt.defaultOption || opt.options[0];
+      });
+    }
+    return initial;
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim() || !employeeCode.trim()) {
@@ -32,12 +43,29 @@ export default function DishVoteConfirmationModal({
       return;
     }
 
+    // Armar título detallado con las elecciones exactas del colaborador
+    const selectedDetails = Object.values(selections).filter(Boolean);
+    const formattedTitle =
+      selectedDetails.length > 0
+        ? `${pkg.title} (${selectedDetails.join(' • ')})`
+        : pkg.title;
+
+    // Extraer elecciones individuales para columnas dedicadas en base de datos
+    const mainDishChoice = selections.mainDish || null;
+    const sideDishChoice = selections.sideDish || null;
+    const drinkChoice = selections.drink || selections.toast || null;
+    const selectedDetailsText = Object.values(selections).filter(Boolean).join(' • ');
+
     setIsSubmitting(true);
     await onSubmitVote({
       email: email.trim().toLowerCase(),
       employeeCode: employeeCode.trim(),
       packageId: pkg.id,
-      packageTitle: pkg.title
+      packageTitle: formattedTitle,
+      selectedDish: mainDishChoice,
+      selectedSide: sideDishChoice,
+      selectedDrink: drinkChoice,
+      selectedOptions: selectedDetailsText
     });
     setIsSubmitting(false);
   };
@@ -149,6 +177,45 @@ export default function DishVoteConfirmationModal({
               />
             </div>
           </div>
+
+          {/* Opciones personalizables del paquete (Platos de fondo, cortes, bebidas y guarnición) */}
+          {pkg.selectableOptions && pkg.selectableOptions.length > 0 && (
+            <div className="space-y-4 bg-[#F4F7FB] border border-slate-200/90 rounded-2xl p-4 sm:p-5">
+              <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#01ACAD] block">
+                Personaliza tu elección:
+              </span>
+              <div className="space-y-3.5">
+                {pkg.selectableOptions.map((opt) => (
+                  <div key={opt.id} className="space-y-1.5">
+                    <label className="block font-black text-slate-800 text-xs sm:text-sm">
+                      {opt.label}:
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {opt.options.map((choice) => {
+                        const isSelected = selections[opt.id] === choice;
+                        return (
+                          <button
+                            key={choice}
+                            type="button"
+                            onClick={() =>
+                              setSelections((prev) => ({ ...prev, [opt.id]: choice }))
+                            }
+                            className={`py-2 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-bold transition border cursor-pointer active:scale-95 text-left ${
+                              isSelected
+                                ? 'bg-[#002559] text-white border-[#002559] shadow-xs'
+                                : 'bg-white text-slate-700 border-slate-300 hover:border-[#01ACAD] hover:bg-slate-50'
+                            }`}
+                          >
+                            {choice}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Detalle de lo que incluye el paquete seleccionado en lista vertical limpia */}
           <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-2.5">

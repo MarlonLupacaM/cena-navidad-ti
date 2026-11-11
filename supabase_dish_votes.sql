@@ -1,19 +1,29 @@
 -- ==============================================================================
--- SCRIPT A PRUEBA DE ERRORES: CREAR O ACTUALIZAR TABLA dish_votes
--- Ejecuta TODO este bloque en el "SQL Editor" de Supabase (sin seleccionar texto)
+-- 1. SI TU TABLA YA EXISTE, SOLO EJECUTA ESTAS 5 LÍNEAS PARA AGREGAR LAS COLUMNAS:
 -- ==============================================================================
+ALTER TABLE public.dish_votes
+ADD COLUMN IF NOT EXISTS selected_dish TEXT,
+ADD COLUMN IF NOT EXISTS selected_side TEXT,
+ADD COLUMN IF NOT EXISTS selected_drink TEXT,
+ADD COLUMN IF NOT EXISTS selected_options TEXT;
 
--- 1. Crear tabla básica si aún no existe
+-- ==============================================================================
+-- 2. SCRIPT COMPLETO (Por si necesitas crear la tabla desde cero en otra base)
+-- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.dish_votes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     employee_code TEXT NOT NULL,
     email TEXT NOT NULL,
     package_id TEXT NOT NULL,
     package_title TEXT NOT NULL,
+    selected_dish TEXT,
+    selected_side TEXT,
+    selected_drink TEXT,
+    selected_options TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Agregar restricciones UNIQUE para código de trabajador y correo de forma segura
+-- Asegurar restricciones UNIQUE para código de trabajador y correo
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -29,14 +39,14 @@ BEGIN
     END IF;
 END $$;
 
--- 3. Índices para acelerar búsquedas
+-- Índices para acelerar búsquedas
 CREATE INDEX IF NOT EXISTS idx_dish_votes_employee_code ON public.dish_votes (employee_code);
 CREATE INDEX IF NOT EXISTS idx_dish_votes_package_id ON public.dish_votes (package_id);
 
--- 4. Habilitar Seguridad por Fila (RLS)
+-- Habilitar Seguridad por Fila (RLS)
 ALTER TABLE public.dish_votes ENABLE ROW LEVEL SECURITY;
 
--- 5. Crear políticas de acceso público (anon)
+-- Políticas de acceso público (anon)
 DROP POLICY IF EXISTS "Permitir insertar votos de platos" ON public.dish_votes;
 CREATE POLICY "Permitir insertar votos de platos"
 ON public.dish_votes
@@ -51,7 +61,7 @@ FOR SELECT
 TO anon, authenticated
 USING (true);
 
--- 6. Función RPC para obtener el conteo agrupado por paquete en tiempo real
+-- Función RPC para conteo en tiempo real por paquete
 CREATE OR REPLACE FUNCTION public.get_dish_vote_counts()
 RETURNS TABLE (package_id TEXT, count BIGINT)
 LANGUAGE SQL
@@ -62,5 +72,4 @@ AS $$
     GROUP BY package_id;
 $$;
 
--- Permisos de ejecución de la función
 GRANT EXECUTE ON FUNCTION public.get_dish_vote_counts() TO anon, authenticated;

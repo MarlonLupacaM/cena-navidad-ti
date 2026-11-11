@@ -330,7 +330,16 @@ export default function App() {
     setTimeout(() => setVoteToast(null), 3500);
   };
 
-  const handleDishVoteSubmit = async ({ email, employeeCode, packageId, packageTitle }) => {
+  const handleDishVoteSubmit = async ({
+    email,
+    employeeCode,
+    packageId,
+    packageTitle,
+    selectedDish,
+    selectedSide,
+    selectedDrink,
+    selectedOptions
+  }) => {
     // 0. Pre-validación: consultar en Supabase si el código de trabajador o el correo ya votaron
     const existing = await checkEmployeeHasVotedDish({ employeeCode, email });
     if (existing && existing.found) {
@@ -342,12 +351,16 @@ export default function App() {
       return;
     }
 
-    // 1. Guardar en Supabase (con restricciones UNIQUE a nivel de BD)
+    // 1. Guardar en Supabase (con columnas dedicadas y restricciones UNIQUE a nivel de BD)
     const res = await insertDishVote({
       email,
       employeeCode,
       packageId,
-      packageTitle
+      packageTitle,
+      selectedDish,
+      selectedSide,
+      selectedDrink,
+      selectedOptions
     });
 
     if (res && !res.success && res.duplicate) {
@@ -365,7 +378,16 @@ export default function App() {
       [packageId]: (prev[packageId] || 0) + 1
     }));
 
-    const voteInfo = { employeeCode, email, packageId, packageTitle };
+    const voteInfo = {
+      employeeCode,
+      email,
+      packageId,
+      packageTitle,
+      selectedDish,
+      selectedSide,
+      selectedDrink,
+      selectedOptions
+    };
     setUserDishVote(voteInfo);
     setVotingForDishPkg(null);
     triggerConfetti();
