@@ -3,7 +3,14 @@ import confetti from 'canvas-confetti';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
 
 import { INITIAL_VENUES } from './data/venues';
-import { getLiveVoteCounts, insertVote, checkEmployeeHasVoted } from './lib/supabase';
+import {
+  getLiveVoteCounts,
+  insertVote,
+  checkEmployeeHasVoted,
+  getLiveDishVoteCounts,
+  insertDishVote,
+  checkEmployeeHasVotedDish
+} from './lib/supabase';
 import Header from './components/Header';
 import VenueCard from './components/VenueCard';
 import VenueModal from './components/VenueModal';
@@ -14,6 +21,8 @@ import SnowEffect from './components/SnowEffect';
 import ChristmasPlaylistAndComments from './components/ChristmasPlaylistAndComments';
 import ChristmasAudioIntro from './components/ChristmasAudioIntro';
 import DuplicateVoteModal from './components/DuplicateVoteModal';
+import WinnerAndDishesSection from './components/WinnerAndDishesSection';
+import DishVoteConfirmationModal from './components/DishVoteConfirmationModal';
 
 export default function App() {
   const [duplicateVoteData, setDuplicateVoteData] = useState(null);
@@ -55,6 +64,119 @@ export default function App() {
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [comparedVenueIds, setComparedVenueIds] = useState(['cerro-juli', 'costa-del-sol']);
   const [voteToast, setVoteToast] = useState(null);
+
+  // Estados para la Fase 2: Votación de Platos de Don Facu
+  const [votingForDishPkg, setVotingForDishPkg] = useState(null);
+  const [userDishVote, setUserDishVote] = useState(() => {
+    const saved = localStorage.getItem('caja_navidad_user_dish_vote');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return null;
+  });
+
+  const [dishVotes, setDishVotes] = useState(() => {
+    const saved = localStorage.getItem('caja_navidad_dish_votes');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return {
+      'paquete-1': 14,
+      'paquete-2': 38,
+      'paquete-3': 52,
+      'paquete-4': 26
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('caja_navidad_dish_votes', JSON.stringify(dishVotes));
+  }, [dishVotes]);
+
+  useEffect(() => {
+    if (userDishVote) {
+      localStorage.setItem('caja_navidad_user_dish_vote', JSON.stringify(userDishVote));
+    } else {
+      localStorage.removeItem('caja_navidad_user_dish_vote');
+    }
+  }, [userDishVote]);
+
+  // Al iniciar la app (y al reenfocar la pestaña), consultar a Supabase si el voto guardado aún existe.
+  // Si fue eliminado manualmente en Supabase, se limpia el estado y localStorage para permitir votar de nuevo.
+  useEffect(() => {
+    let isCancelled = false;
+
+    const verifySavedDishVote = async () => {
+      const saved = localStorage.getItem('caja_navidad_user_dish_vote');
+      if (!saved) return;
+
+      try {
+        const parsed = JSON.parse(saved);
+        if (!parsed?.employeeCode) return;
+
+        const checkRes = await checkEmployeeHasVotedDish(parsed.employeeCode);
+        if (isCancelled) return;
+
+        // Si Supabase respondió exitosamente que NO existe (found === false), fue eliminado en la base de datos
+        if (checkRes && checkRes.found === false) {
+          console.info('Voto de plato eliminado en Supabase. Desbloqueando colaborador...');
+          setUserDishVote(null);
+          localStorage.removeItem('caja_navidad_user_dish_vote');
+        } else if (checkRes && checkRes.found === true && checkRes.vote) {
+          // Si existe, mantener sincronizado el paquete
+          const dbVote = checkRes.vote;
+          if (dbVote.package_id && dbVote.package_id !== parsed.packageId) {
+            setUserDishVote({
+              ...parsed,
+              packageId: dbVote.package_id,
+              packageTitle: dbVote.package_title || parsed.packageTitle
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error al verificar persistencia de voto:', err);
+      }
+    };
+
+    verifySavedDishVote();
+
+    window.addEventListener('focus', verifySavedDishVote);
+    return () => {
+      isCancelled = true;
+      window.removeEventListener('focus', verifySavedDishVote);
+    };
+  }, []);
+
+  // Sincronización de votos de platos desde Supabase
+  useEffect(() => {
+    let isMounted = true;
+    const syncDishVotes = async () => {
+      const live = await getLiveDishVoteCounts();
+      if (!isMounted || !live) return;
+      setDishVotes((prev) => {
+        const next = { ...prev };
+        live.forEach((item) => {
+          if (item.package_id) {
+            next[item.package_id] = Number(item.count);
+          }
+        });
+        return next;
+      });
+    };
+    syncDishVotes();
+    const interval = setInterval(syncDishVotes, 8000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('caja_navidad_venues', JSON.stringify(venues));
@@ -136,6 +258,15 @@ export default function App() {
     return sorted[0].id;
   }, [venues]);
 
+  // Don Facu siempre primero en la grilla de resultados
+  const orderedVenues = useMemo(() => {
+    return [...venues].sort((a, b) => {
+      if (a.id === 'don-facu') return -1;
+      if (b.id === 'don-facu') return 1;
+      return 0;
+    });
+  }, [venues]);
+
   const triggerConfetti = () => {
     try {
       confetti({
@@ -199,6 +330,50 @@ export default function App() {
     setTimeout(() => setVoteToast(null), 3500);
   };
 
+  const handleDishVoteSubmit = async ({ email, employeeCode, packageId, packageTitle }) => {
+    // 0. Pre-validación: consultar en Supabase si el código de trabajador o el correo ya votaron
+    const existing = await checkEmployeeHasVotedDish({ employeeCode, email });
+    if (existing && existing.found) {
+      setVotingForDishPkg(null);
+      setDuplicateVoteData({
+        employeeCode: existing.vote?.employee_code || employeeCode,
+        email: existing.vote?.email || email
+      });
+      return;
+    }
+
+    // 1. Guardar en Supabase (con restricciones UNIQUE a nivel de BD)
+    const res = await insertDishVote({
+      email,
+      employeeCode,
+      packageId,
+      packageTitle
+    });
+
+    if (res && !res.success && res.duplicate) {
+      setVotingForDishPkg(null);
+      setDuplicateVoteData({
+        employeeCode,
+        email
+      });
+      return;
+    }
+
+    // 2. Actualización optimista de UI
+    setDishVotes((prev) => ({
+      ...prev,
+      [packageId]: (prev[packageId] || 0) + 1
+    }));
+
+    const voteInfo = { employeeCode, email, packageId, packageTitle };
+    setUserDishVote(voteInfo);
+    setVotingForDishPkg(null);
+    triggerConfetti();
+
+    setVoteToast('¡Voto de comida registrado exitosamente!');
+    setTimeout(() => setVoteToast(null), 3500);
+  };
+
   const handleToggleCompare = (venueId) => {
     setComparedVenueIds((prev) => {
       if (prev.includes(venueId)) {
@@ -259,30 +434,57 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
-        {/* Venues Grid */}
-        <section className="space-y-3 sm:space-y-4">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-8 sm:space-y-10">
+        {/* 🏆 SECCIÓN GANADOR DON FACU + VOTACIÓN DE PLATOS (FASE 2) */}
+        <WinnerAndDishesSection
+          dishVotes={dishVotes}
+          userDishVote={userDishVote}
+          onVoteDishClick={(pkg) => {
+            if (userDishVote) {
+              setDuplicateVoteData({
+                employeeCode: userDishVote.employeeCode,
+                email: userDishVote.email
+              });
+              return;
+            }
+            setVotingForDishPkg(pkg);
+          }}
+          onViewDonFacuDetails={() => {
+            const donFacuVenue = venues.find((v) => v.id === 'don-facu');
+            if (donFacuVenue) setViewingVenue(donFacuVenue);
+          }}
+        />
+
+        {/* Historial de Sedes Candidatas (Votación Concluida) */}
+        <section className="space-y-3 sm:space-y-4 pt-4 border-t border-slate-200/80">
           <div className="flex justify-between items-center flex-wrap gap-2 sm:gap-3">
-            <h2 className="text-lg sm:text-2xl font-black text-[#002559] flex items-center gap-2">
-              <span>Sedes Candidatas</span>
-              <span className="text-[11px] sm:text-xs font-black bg-[#01ACAD]/20 text-[#002559] px-2.5 py-0.5 rounded-full">
-                {venues.length} opciones
-              </span>
-            </h2>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400">
+                  Fase 1 Concluida
+                </span>
+                <span className="text-[10px] sm:text-xs font-extrabold bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                  Cerrada el 10 nov
+                </span>
+              </div>
+              <h2 className="text-base sm:text-xl font-black text-slate-700 leading-snug">
+                Resultados de Sedes Candidatas
+              </h2>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {venues.map((venue) => (
+            {orderedVenues.map((venue) => (
                 <VenueCard
                   key={venue.id}
                   venue={venue}
                   totalVotes={totalVotes}
                   userVote={userVote}
                   onVoteClick={() => {
-                    // Votación cerrada: no permite abrir modal de confirmación
+                    // Votación cerrada
                   }}
                   onDetailsClick={(v) => setViewingVenue(v)}
-                  isLeader={venue.id === leaderId}
+                  isLeader={venue.id === 'don-facu'}
                   isCompared={comparedVenueIds.includes(venue.id)}
                   onToggleCompare={handleToggleCompare}
                 />
@@ -353,6 +555,15 @@ export default function App() {
         onClose={() => setDuplicateVoteData(null)}
         data={duplicateVoteData}
       />
+
+      {/* Modal para Votación de Paquetes Navideños de Don Facu (Fase 2) */}
+      {votingForDishPkg && (
+        <DishVoteConfirmationModal
+          pkg={votingForDishPkg}
+          onClose={() => setVotingForDishPkg(null)}
+          onSubmitVote={handleDishVoteSubmit}
+        />
+      )}
     </div>
   );
 }

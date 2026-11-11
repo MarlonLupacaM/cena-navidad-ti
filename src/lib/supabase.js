@@ -52,7 +52,7 @@ export async function checkEmployeeHasVoted(employeeCode) {
 }
 
 /**
- * Emite un voto en la base de datos de Supabase
+ * Emite un voto en la base de datos de Supabase (sedes)
  */
 export async function insertVote({ employeeCode, email, preferredDate, venueId, venueName }) {
   try {
@@ -91,6 +91,137 @@ export async function insertVote({ employeeCode, email, preferredDate, venueId, 
     return { success: true };
   } catch (err) {
     console.error('Error insertando voto en Supabase:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Obtiene el conteo en vivo de votos de platos / paquetes
+ */
+export async function getLiveDishVoteCounts() {
+  try {
+    // 1. Intentar RPC get_dish_vote_counts si existe en Supabase
+    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_dish_vote_counts`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({})
+    });
+    if (rpcRes.ok) {
+      const data = await rpcRes.json();
+      if (Array.isArray(data)) return data;
+    }
+
+    // 2. Fallback: Consulta directa a la tabla dish_votes si existe
+    const tableRes = await fetch(`${SUPABASE_URL}/rest/v1/dish_votes?select=package_id`, {
+      method: 'GET',
+      headers
+    });
+    if (tableRes.ok) {
+      const rows = await tableRes.json();
+      if (Array.isArray(rows)) {
+        const counts = {};
+        rows.forEach((r) => {
+          counts[r.package_id] = (counts[r.package_id] || 0) + 1;
+        });
+        return Object.keys(counts).map((k) => ({
+          package_id: k,
+          count: counts[k]
+        }));
+      }
+    }
+    return null;
+  } catch (err) {
+    console.warn('Fallback local para votos de platos:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Verifica si un trabajador ya votó por un plato en Supabase (por código y/o por correo).
+ * Devuelve { found: true, vote } si existe, { found: false } si no existe (o fue eliminado),
+ * o { error: true } si hubo error de conexión.
+ */
+export async function checkEmployeeHasVotedDish(param) {
+  try {
+    let code = '';
+    let mail = '';
+    if (typeof param === 'string') {
+      code = param.trim();
+    } else if (param && typeof param === 'object') {
+      code = param.employeeCode ? param.employeeCode.trim() : '';
+      mail = param.email ? param.email.trim().toLowerCase() : '';
+    }
+    if (!code && !mail) return { found: false };
+
+    let query = '';
+    if (code && mail) {
+      query = `or=(employee_code.eq.${encodeURIComponent(code)},email.eq.${encodeURIComponent(mail)})`;
+    } else if (code) {
+      query = `employee_code=eq.${encodeURIComponent(code)}`;
+    } else {
+      query = `email=eq.${encodeURIComponent(mail)}`;
+    }
+
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/dish_votes?select=employee_code,email,package_id,package_title&${query}&limit=1`,
+      {
+        method: 'GET',
+        headers
+      }
+    );
+    if (!res.ok) {
+      return { error: true, status: res.status };
+    }
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      return { found: true, vote: data[0] };
+    }
+    return { found: false };
+  } catch (err) {
+    console.warn('Error verificando voto de plato en Supabase:', err.message);
+    return { error: true, message: err.message };
+  }
+}
+
+/**
+ * Registra el voto del colaborador para el paquete de comida
+ */
+export async function insertDishVote({ employeeCode, email, packageId, packageTitle }) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/dish_votes`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        employee_code: employeeCode.trim(),
+        email: email.trim(),
+        package_id: packageId,
+        package_title: packageTitle
+      })
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      const isDuplicate =
+        res.status === 409 ||
+        errorText.toLowerCase().includes('duplicate') ||
+        errorText.toLowerCase().includes('unique') ||
+        errorText.toLowerCase().includes('already exists');
+
+      return {
+        success: false,
+        duplicate: isDuplicate,
+        error: isDuplicate
+          ? 'Este código de trabajador o correo ya emitió su voto de plato.'
+          : errorText || 'Error registrando voto de plato'
+      };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('Error insertando voto de plato en Supabase:', err);
     return { success: false, error: err.message };
   }
 }

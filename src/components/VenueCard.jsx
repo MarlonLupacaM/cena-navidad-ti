@@ -50,59 +50,54 @@ export default function VenueCard({
     }
   }, [currentIdx, images]);
 
-  return (
+  const cardContent = (
     <>
-      <article
-        className={`group relative bg-white rounded-3xl overflow-hidden border transition-all duration-300 flex flex-col h-full ${
-          isVotedByMe
-            ? 'border-[#01ACAD] shadow-xl ring-2 ring-[#01ACAD]/30'
-            : isLeader
-            ? 'border-[#01ACAD]/70 shadow-lg hover:shadow-2xl'
-            : 'border-slate-200 hover:border-[#01ACAD]/50 shadow-sm hover:shadow-lg'
+      {/* Image Container: Carrusel interactivo para el ganador, estático para los demás */}
+      <div
+        onClick={isLeader ? () => setIsLightboxOpen(true) : undefined}
+        className={`relative h-56 sm:h-60 w-full bg-white flex items-center justify-center overflow-hidden select-none ${
+          isLeader ? 'cursor-zoom-in group/img' : 'cursor-default'
         }`}
+        title={isLeader ? 'Clic para agrandar foto' : undefined}
       >
-        {/* Image Container: Carrusel interactivo totalmente libre, sin padding ni bordes, clic para agrandar */}
-        <div
-          onClick={() => setIsLightboxOpen(true)}
-          className="relative h-56 sm:h-60 w-full bg-white flex items-center justify-center overflow-hidden select-none cursor-zoom-in group/img"
-          title="Clic para agrandar foto"
-        >
-          <img
-            src={images[currentIdx]}
-            alt={`${venue.name} - Foto ${currentIdx + 1}`}
-            className="w-full h-full object-contain transition-all duration-300 group-hover/img:scale-[1.02]"
-            loading="eager"
-            decoding="async"
-          />
+        <img
+          src={images[currentIdx]}
+          alt={`${venue.name} - Foto ${currentIdx + 1}`}
+          className="w-full h-full object-contain transition-all duration-300"
+          loading="eager"
+          decoding="async"
+        />
 
-          {/* Quick zoom icon indicator on hover */}
+        {/* Quick zoom icon indicator on hover (solo ganador) */}
+        {isLeader && (
           <div className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/80 hover:bg-white text-slate-600 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-xs z-10 pointer-events-none">
             <Maximize2 className="w-3.5 h-3.5" />
           </div>
+        )}
 
-          {/* Navigation Arrows: Sutiles en gris */}
-          {images.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border border-slate-200/80 flex items-center justify-center transition shadow-xs hover:scale-105 active:scale-95 z-20"
-                title="Foto anterior"
-              >
-                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
+        {/* Navigation Arrows: Solo interactivo para el ganador */}
+        {isLeader && images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border border-slate-200/80 flex items-center justify-center transition shadow-xs hover:scale-105 active:scale-95 z-20"
+              title="Foto anterior"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
 
-              <button
-                type="button"
-                onClick={handleNext}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border border-slate-200/80 flex items-center justify-center transition shadow-xs hover:scale-105 active:scale-95 z-20"
-                title="Siguiente foto"
-              >
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </>
-          )}
-        </div>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border border-slate-200/80 flex items-center justify-center transition shadow-xs hover:scale-105 active:scale-95 z-20"
+              title="Siguiente foto"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </>
+        )}
+      </div>
 
       {/* Body Content: Simplificado y limpio */}
       <div className="p-3.5 sm:p-5 flex-1 flex flex-col justify-between space-y-3 sm:space-y-3.5">
@@ -136,8 +131,13 @@ export default function VenueCard({
         {/* Action Buttons: Simples y directos */}
         <div className="pt-2 flex items-center gap-2">
           <button
-            onClick={() => onDetailsClick(venue)}
-            className="flex-1 border border-slate-300 hover:border-[#01ACAD] hover:bg-slate-50 text-[#002559] font-bold py-2 px-3 rounded-xl text-xs transition active:scale-95"
+            onClick={isLeader ? () => onDetailsClick(venue) : undefined}
+            disabled={!isLeader}
+            className={`flex-1 font-bold py-2 px-3 rounded-xl text-xs transition ${
+              isLeader
+                ? 'border border-slate-300 hover:border-[#01ACAD] hover:bg-slate-50 text-[#002559] active:scale-95 cursor-pointer'
+                : 'border border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed select-none'
+            }`}
           >
             Ver
           </button>
@@ -145,17 +145,42 @@ export default function VenueCard({
           <button
             disabled
             className={`flex-1 font-bold py-2 px-3 rounded-xl text-xs transition shadow-xs ${
-              isVotedByMe
-                ? 'bg-[#01ACAD] text-white cursor-default opacity-100 font-black'
+              isLeader
+                ? 'bg-emerald-700 text-white font-black opacity-100'
                 : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60 select-none'
             }`}
             title="La votación oficial ha concluido"
           >
-            {isVotedByMe ? 'Elegido' : 'Votación Cerrada'}
+            {isLeader ? 'Sede Ganadora' : 'Votación Cerrada'}
           </button>
         </div>
       </div>
-    </article>
+    </>
+  );
+
+  return (
+    <>
+      {isLeader ? (
+        /* Tarjeta Ganadora: Marco navideño estilizado con cinta tradicional en CSS puro (Rojo, Verde pino y Dorado) */
+        <div
+          className="relative p-[4px] rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col h-full group"
+          style={{
+            background:
+              'repeating-linear-gradient(-45deg, #C41E3A 0px, #C41E3A 14px, #FFFFFF 14px, #FFFFFF 20px, #1E6B38 20px, #1E6B38 34px, #FFFFFF 34px, #FFFFFF 40px, #D4AF37 40px, #D4AF37 44px, #FFFFFF 44px, #FFFFFF 48px)',
+            boxShadow:
+              '0 12px 30px -5px rgba(30, 107, 56, 0.25), 0 8px 16px -6px rgba(196, 30, 58, 0.2)'
+          }}
+        >
+          <article className="bg-white rounded-[20px] overflow-hidden flex flex-col h-full">
+            {cardContent}
+          </article>
+        </div>
+      ) : (
+        /* Tarjetas de las demás sedes atenuadas al punto justo (70%) y con clicks bloqueados */
+        <article className="group relative bg-white rounded-3xl overflow-hidden border border-slate-200 flex flex-col h-full shadow-sm opacity-70 select-none pointer-events-none cursor-not-allowed">
+          {cardContent}
+        </article>
+      )}
 
     {/* Lightbox: Imagen agrandada en pantalla completa con navegación */}
     {isLightboxOpen && (
