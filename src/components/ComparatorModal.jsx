@@ -128,24 +128,17 @@ export default function ComparatorModal({
                       </div>
                     </div>
 
-                    {/* Vote CTA */}
+                    {/* Vote CTA Deshabilitado */}
                     <button
-                      onClick={() => {
-                        if (!userVote) {
-                          onClose();
-                          onVote(venue);
-                        }
-                      }}
-                      disabled={Boolean(userVote)}
+                      disabled
                       className={`w-full py-2.5 px-3 rounded-xl font-black text-xs transition shadow-sm ${
                         isVoted
                           ? 'bg-[#01ACAD] text-white opacity-100 cursor-default'
-                          : userVote
-                          ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                          : 'bg-[#002559] hover:bg-[#001c47] text-white active:scale-95'
+                          : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 opacity-60 select-none'
                       }`}
+                      title="La votación oficial ha concluido"
                     >
-                      {isVoted ? 'Elegido' : userVote ? 'Votado' : 'Votar por esta sede'}
+                      {isVoted ? 'Elegido' : 'Votación Cerrada'}
                     </button>
                   </div>
                 );

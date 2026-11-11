@@ -143,19 +143,15 @@ export default function VenueCard({
           </button>
 
           <button
-            onClick={() => {
-              if (!hasAlreadyVoted) onVoteClick(venue);
-            }}
-            disabled={hasAlreadyVoted}
+            disabled
             className={`flex-1 font-bold py-2 px-3 rounded-xl text-xs transition shadow-xs ${
               isVotedByMe
                 ? 'bg-[#01ACAD] text-white cursor-default opacity-100 font-black'
-                : hasAlreadyVoted
-                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50 select-none'
-                : 'bg-[#002559] hover:bg-[#001c47] text-white active:scale-95'
+                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60 select-none'
             }`}
+            title="La votación oficial ha concluido"
           >
-            {isVotedByMe ? 'Elegido' : hasAlreadyVoted ? 'Desactivado' : 'Elegir'}
+            {isVotedByMe ? 'Elegido' : 'Votación Cerrada'}
           </button>
         </div>
       </div>

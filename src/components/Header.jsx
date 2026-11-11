@@ -68,39 +68,15 @@ export default function Header({
             </div>
           </div>
 
-          {/* Countdown timer perfectly centered, slim and compact on mobile */}
-          <div className="flex flex-col items-center justify-center shrink-0 bg-white/10 backdrop-blur-md px-3.5 py-2 sm:px-6 sm:py-3.5 rounded-xl sm:rounded-2xl border border-white/15 shadow-sm w-auto self-start sm:self-center text-center">
+          {/* Countdown timer cerrado / tiempo finalizado */}
+          <div className="flex flex-col items-center justify-center shrink-0 bg-white/10 backdrop-blur-md px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-xl sm:rounded-2xl border border-white/15 shadow-sm w-auto self-start sm:self-center text-center">
             <span className="text-[10px] sm:text-xs text-white/95 font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 mb-1 sm:mb-1.5">
-              <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#01ACAD]" /> Termina el 10 de noviembre
+              <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#01ACAD]" /> Votación Finalizada
             </span>
-            <div className="flex items-center justify-center gap-1.5 sm:gap-3 text-white">
-              <div className="flex flex-col items-center min-w-[26px] sm:min-w-[42px]">
-                <span className="text-base sm:text-2xl md:text-3xl font-black font-mono tracking-tight text-white drop-shadow-sm">
-                  {timeLeft.days}
-                </span>
-                <span className="text-[8px] sm:text-[10px] text-slate-300 uppercase font-semibold">días</span>
-              </div>
-              <span className="text-sm sm:text-lg font-bold text-white/40 pb-1.5 sm:pb-2.5">:</span>
-              <div className="flex flex-col items-center min-w-[26px] sm:min-w-[42px]">
-                <span className="text-base sm:text-2xl md:text-3xl font-black font-mono tracking-tight text-white drop-shadow-sm">
-                  {String(timeLeft.hours).padStart(2, '0')}
-                </span>
-                <span className="text-[8px] sm:text-[10px] text-slate-300 uppercase font-semibold">horas</span>
-              </div>
-              <span className="text-sm sm:text-lg font-bold text-white/40 pb-1.5 sm:pb-2.5">:</span>
-              <div className="flex flex-col items-center min-w-[26px] sm:min-w-[42px]">
-                <span className="text-base sm:text-2xl md:text-3xl font-black font-mono tracking-tight text-white drop-shadow-sm">
-                  {String(timeLeft.minutes).padStart(2, '0')}
-                </span>
-                <span className="text-[8px] sm:text-[10px] text-slate-300 uppercase font-semibold">min</span>
-              </div>
-              <span className="text-sm sm:text-lg font-bold text-white/40 pb-1.5 sm:pb-2.5">:</span>
-              <div className="flex flex-col items-center min-w-[26px] sm:min-w-[42px]">
-                <span className="text-base sm:text-2xl md:text-3xl font-black font-mono tracking-tight text-white drop-shadow-sm">
-                  {String(timeLeft.seconds).padStart(2, '0')}
-                </span>
-                <span className="text-[8px] sm:text-[10px] text-slate-300 uppercase font-semibold">seg</span>
-              </div>
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-white">
+              <span className="text-xs sm:text-sm font-black bg-white/20 text-white px-3 py-1 rounded-lg tracking-wide uppercase border border-white/20">
+                Periodo concluido el 10 de noviembre
+              </span>
             </div>
           </div>
         </div>

@@ -278,15 +278,8 @@ export default function App() {
                   venue={venue}
                   totalVotes={totalVotes}
                   userVote={userVote}
-                  onVoteClick={(v) => {
-                    if (userVote) {
-                      setDuplicateVoteData({
-                        employeeCode: userVote.employeeCode,
-                        email: userVote.email
-                      });
-                      return;
-                    }
-                    setVotingForVenue(v);
+                  onVoteClick={() => {
+                    // Votación cerrada: no permite abrir modal de confirmación
                   }}
                   onDetailsClick={(v) => setViewingVenue(v)}
                   isLeader={venue.id === leaderId}
