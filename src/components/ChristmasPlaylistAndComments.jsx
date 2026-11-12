@@ -386,18 +386,25 @@ export default function ChristmasPlaylistAndComments() {
           backgroundPosition: '0 0, 12px 12px, 0 0, 20px 20px'
         }}
       >
-        {/* Post-its Grid: Cuadrícula fija de hasta 8 elementos sin scroll */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        {/* Post-its Grid: Cuadrícula con empaque denso y soporte de 2 filas para notas extensas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:grid-flow-row-dense auto-rows-[minmax(195px,auto)]">
           {visibleNotes.map((note) => {
             const color = POSTIT_COLORS[note.colorIdx % POSTIT_COLORS.length];
             const isDeseo = note.type === 'deseo';
             const isPinned = note.id === pinnedNoteId;
             const parsed = parseNoteContent(note.text);
+            const isLarge = Boolean(
+              (parsed.isList && parsed.items.length > 3) ||
+              (note.text && note.text.length > 175) ||
+              (note.text && note.text.split(/\r?\n/).length > 4)
+            );
 
             return (
               <div
                 key={note.id}
-                className={`relative ${color.bg} ${color.text} ${color.border} border p-4 pt-5 pb-8 rounded-xs shadow-lg ${color.shadow} transform ${note.rotation} hover:rotate-0 hover:scale-105 transition-all duration-200 flex flex-col justify-between min-h-[185px] sm:min-h-[200px] select-none ${
+                className={`relative ${color.bg} ${color.text} ${color.border} border p-4 pt-5 pb-5 rounded-xs shadow-lg ${color.shadow} transform ${note.rotation} hover:rotate-0 hover:scale-105 transition-all duration-200 flex flex-col justify-between min-h-[195px] h-full select-none ${
+                  isLarge ? 'sm:row-span-2' : ''
+                } ${
                   isPinned ? 'ring-2 ring-amber-500/50 shadow-xl' : ''
                 }`}
                 style={{
@@ -434,7 +441,7 @@ export default function ChristmasPlaylistAndComments() {
                   </div>
 
                   {/* Contenido (Lista estructurada o Párrafo) */}
-                  <div className="flex-1 overflow-y-auto max-h-[220px] sm:max-h-[250px] pr-1 select-text">
+                  <div className={`flex-1 min-h-0 overflow-y-auto pr-1 select-text ${isLarge ? 'max-h-[350px]' : 'max-h-[150px]'}`}>
                     {parsed.isList ? (
                       <div>
                         {parsed.header && (
