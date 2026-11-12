@@ -200,11 +200,51 @@ export default function ChristmasPlaylistAndComments() {
     return { sortedNotes: notes, pinnedNoteId: null };
   }, [notes]);
 
-  const totalPages = Math.ceil(sortedNotes.length / ITEMS_PER_PAGE) || 1;
-  const visibleNotes = sortedNotes.slice(
-    currentPage * ITEMS_PER_PAGE,
-    (currentPage + 1) * ITEMS_PER_PAGE
-  );
+  // Calcular páginas respetando un máximo estricto de 8 slots (4 columnas x 2 filas)
+  const pages = useMemo(() => {
+    if (!sortedNotes || sortedNotes.length === 0) return [[]];
+
+    const result = [];
+    let currentPageNotes = [];
+    let currentSlots = 0;
+    const MAX_SLOTS = 8;
+
+    for (const note of sortedNotes) {
+      const parsed = parseNoteContent(note.text);
+      // Solo una lista muy extensa (> 5 ítems) o texto realmente masivo (> 300 caracteres) justifica 2 filas
+      const isLarge = Boolean(
+        (parsed.isList && parsed.items.length > 5) ||
+        (note.text && note.text.length > 300) ||
+        (note.text && note.text.split(/\r?\n/).length > 7)
+      );
+      const noteSlots = isLarge ? 2 : 1;
+
+      // Si agregar esta nota supera los 8 slots de la cuadrícula de 2 filas, cerramos la página actual
+      if (currentSlots + noteSlots > MAX_SLOTS && currentPageNotes.length > 0) {
+        result.push(currentPageNotes);
+        currentPageNotes = [];
+        currentSlots = 0;
+      }
+
+      currentPageNotes.push({ ...note, isLarge, parsed });
+      currentSlots += noteSlots;
+    }
+
+    if (currentPageNotes.length > 0) {
+      result.push(currentPageNotes);
+    }
+
+    return result;
+  }, [sortedNotes]);
+
+  const totalPages = pages.length || 1;
+  const visibleNotes = pages[currentPage] || [];
+
+  useEffect(() => {
+    if (currentPage >= totalPages && totalPages > 0) {
+      setCurrentPage(totalPages - 1);
+    }
+  }, [totalPages, currentPage]);
 
   useEffect(() => {
     try {
@@ -386,23 +426,19 @@ export default function ChristmasPlaylistAndComments() {
           backgroundPosition: '0 0, 12px 12px, 0 0, 20px 20px'
         }}
       >
-        {/* Post-its Grid: Cuadrícula con empaque denso y soporte de 2 filas para notas extensas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:grid-flow-row-dense auto-rows-[minmax(195px,auto)]">
+        {/* Post-its Grid: Cuadrícula estricta de máximo 2 filas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:grid-rows-2 gap-5 sm:grid-flow-row-dense auto-rows-[minmax(215px,1fr)]">
           {visibleNotes.map((note) => {
             const color = POSTIT_COLORS[note.colorIdx % POSTIT_COLORS.length];
             const isDeseo = note.type === 'deseo';
             const isPinned = note.id === pinnedNoteId;
-            const parsed = parseNoteContent(note.text);
-            const isLarge = Boolean(
-              (parsed.isList && parsed.items.length > 3) ||
-              (note.text && note.text.length > 175) ||
-              (note.text && note.text.split(/\r?\n/).length > 4)
-            );
+            const parsed = note.parsed || parseNoteContent(note.text);
+            const isLarge = Boolean(note.isLarge);
 
             return (
               <div
                 key={note.id}
-                className={`relative ${color.bg} ${color.text} ${color.border} border p-4 pt-5 pb-5 rounded-xs shadow-lg ${color.shadow} transform ${note.rotation} hover:rotate-0 hover:scale-105 transition-all duration-200 flex flex-col justify-between min-h-[195px] h-full select-none ${
+                className={`relative ${color.bg} ${color.text} ${color.border} border p-4 pt-5 pb-5 rounded-xs shadow-lg ${color.shadow} transform ${note.rotation} hover:rotate-0 hover:scale-105 transition-all duration-200 flex flex-col justify-between min-h-[215px] sm:min-h-[225px] h-full select-none ${
                   isLarge ? 'sm:row-span-2' : ''
                 } ${
                   isPinned ? 'ring-2 ring-amber-500/50 shadow-xl' : ''
@@ -441,7 +477,7 @@ export default function ChristmasPlaylistAndComments() {
                   </div>
 
                   {/* Contenido (Lista estructurada o Párrafo) */}
-                  <div className={`flex-1 min-h-0 overflow-y-auto pr-1 select-text ${isLarge ? 'max-h-[350px]' : 'max-h-[150px]'}`}>
+                  <div className={`flex-1 min-h-0 overflow-y-auto pr-1 select-text ${isLarge ? 'max-h-[390px]' : 'max-h-[165px]'}`}>
                     {parsed.isList ? (
                       <div>
                         {parsed.header && (
