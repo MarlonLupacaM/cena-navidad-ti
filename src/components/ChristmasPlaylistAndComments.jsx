@@ -82,6 +82,68 @@ const INITIAL_NOTES = [
   }
 ];
 
+function parseNoteContent(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return { isList: false, text: rawText || '' };
+  }
+
+  const trimmed = rawText.trim();
+
+  // 1. Detectar listas multilinea (líneas que inician con 1., 1), -, *, •)
+  const lines = trimmed.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length >= 2) {
+    const listPattern = /^(\d{1,2}[\.\)]|[-*•])\s+(.+)$/;
+    const listMatches = lines.filter((l) => listPattern.test(l));
+
+    if (listMatches.length >= 2 && listMatches.length >= lines.length - 1) {
+      let header = '';
+      const items = [];
+      lines.forEach((line) => {
+        const match = line.match(listPattern);
+        if (match) {
+          const marker = match[1].replace(/[-*•]/, '•');
+          items.push({ marker, content: match[2].trim() });
+        } else if (items.length === 0) {
+          header = line;
+        } else {
+          items.push({ marker: '•', content: line });
+        }
+      });
+      return { isList: true, header, items };
+    }
+  }
+
+  // 2. Detectar listas numeradas continuas/en una sola línea (ej. "Mi lista 1. item 2. item 3. item")
+  const inlineRegex = /(?:^|\s)(\d{1,2})[\.\)]\s+/g;
+  const matches = [...trimmed.matchAll(inlineRegex)];
+
+  if (matches.length >= 2) {
+    const firstNum = parseInt(matches[0][1], 10);
+    if (firstNum === 1 || matches.length >= 3) {
+      const firstMatchIndex = matches[0].index + (matches[0][0].startsWith(' ') ? 1 : 0);
+      const header = trimmed.substring(0, firstMatchIndex).trim();
+
+      const items = [];
+      for (let i = 0; i < matches.length; i++) {
+        const currentMatch = matches[i];
+        const num = currentMatch[1];
+        const startIndex = currentMatch.index + currentMatch[0].length;
+        const endIndex = i + 1 < matches.length ? matches[i + 1].index : trimmed.length;
+        const itemText = trimmed.substring(startIndex, endIndex).trim();
+        if (itemText) {
+          items.push({ marker: `${num}.`, content: itemText });
+        }
+      }
+
+      if (items.length >= 2) {
+        return { isList: true, header, items };
+      }
+    }
+  }
+
+  return { isList: false, text: trimmed };
+}
+
 export default function ChristmasPlaylistAndComments() {
   const [notes, setNotes] = useState(() => {
     try {
@@ -330,6 +392,7 @@ export default function ChristmasPlaylistAndComments() {
             const color = POSTIT_COLORS[note.colorIdx % POSTIT_COLORS.length];
             const isDeseo = note.type === 'deseo';
             const isPinned = note.id === pinnedNoteId;
+            const parsed = parseNoteContent(note.text);
 
             return (
               <div
@@ -361,22 +424,45 @@ export default function ChristmasPlaylistAndComments() {
                   />
                 )}
 
-                {/* Encabezado del Post-it */}
-                <div>
-                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider mb-2.5 border-b border-black/10 pb-1">
+                {/* Encabezado del Post-it y Contenido */}
+                <div className="flex-1 flex flex-col min-h-0">
+                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider mb-2 border-b border-black/10 pb-1 shrink-0">
                     <span className="opacity-90 flex items-center gap-1">
                       {isDeseo ? 'Deseo' : 'Opinión'}
                     </span>
                     <span className="opacity-60 text-[9px] font-medium">{note.time}</span>
                   </div>
 
-                  <p className="text-xs sm:text-[13px] font-medium leading-relaxed font-sans text-slate-800">
-                    "{note.text}"
-                  </p>
+                  {/* Contenido (Lista estructurada o Párrafo) */}
+                  <div className="flex-1 overflow-y-auto max-h-[220px] sm:max-h-[250px] pr-1 select-text">
+                    {parsed.isList ? (
+                      <div>
+                        {parsed.header && (
+                          <p className="font-bold text-xs sm:text-[13px] text-slate-900 mb-1.5 pb-0.5 border-b border-black/10">
+                            {parsed.header}
+                          </p>
+                        )}
+                        <ul className="space-y-1">
+                          {parsed.items.map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-1.5 text-xs sm:text-[12.5px] leading-snug">
+                              <span className="font-bold opacity-75 shrink-0 text-[11px] sm:text-xs min-w-[16px]">
+                                {item.marker}
+                              </span>
+                              <span className="break-words font-medium">{item.content}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p className="text-xs sm:text-[13px] font-medium leading-relaxed font-sans text-slate-800 whitespace-pre-line">
+                        "{note.text}"
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Espacio inferior libre del Post-it con botón de Corazón interactivo */}
-                <div className="mt-3 pt-2 relative flex items-center justify-between border-t border-black/5">
+                <div className="mt-3 pt-2 relative flex items-center justify-between border-t border-black/5 shrink-0">
                   {/* Botón de Like / Corazón antispam */}
                   <button
                     type="button"
