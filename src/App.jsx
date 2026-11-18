@@ -116,6 +116,7 @@ export default function App() {
   // Estados para la pestaña del Juego del Ángel
   const [activeTab, setActiveTab] = useState('angel'); // 'cena' | 'angel'
   const [isAngelModalOpen, setIsAngelModalOpen] = useState(false);
+  const [angelModalInitialChoice, setAngelModalInitialChoice] = useState('yes');
   const [userAngelVote, setUserAngelVote] = useState(() => {
     const saved = localStorage.getItem('caja_navidad_user_angel_vote');
     if (saved) {
@@ -209,9 +210,11 @@ export default function App() {
           localStorage.removeItem('caja_navidad_user_angel_vote');
         } else if (checkRes && checkRes.found === true && checkRes.vote) {
           const dbVote = checkRes.vote;
+          const isNotParticipating = dbVote.gift_suggestion === '[NO PARTICIPA]';
           setUserAngelVote((prev) => ({
             ...prev,
-            giftSuggestion: dbVote.gift_suggestion || '',
+            giftSuggestion: isNotParticipating ? '[NO PARTICIPA]' : (dbVote.gift_suggestion || ''),
+            willParticipate: !isNotParticipating,
             email: dbVote.email || parsed.email,
             employeeCode: dbVote.employee_code || parsed.employeeCode
           }));
@@ -495,13 +498,14 @@ export default function App() {
     setTimeout(() => setVoteToast(null), 3500);
   };
 
-  const handleAngelVoteSubmit = async ({ email, employeeCode, giftSuggestion }) => {
-    // 1. Guardar o actualizar en Supabase (tabla angel_votes con sólo las columnas requeridas)
+  const handleAngelVoteSubmit = async ({ email, employeeCode, giftSuggestion, willParticipate = true }) => {
+    // 1. Guardar o actualizar en Supabase (tabla angel_votes con persistencia y sin error de schema)
     try {
       insertOrUpdateAngelVote({
         email,
         employeeCode,
-        giftSuggestion
+        giftSuggestion,
+        willParticipate
       });
     } catch (err) {
       console.warn('Error guardando en Supabase, usando persistencia local:', err);
@@ -510,15 +514,20 @@ export default function App() {
     const voteRecord = {
       email,
       employeeCode,
-      giftSuggestion: giftSuggestion || '',
+      giftSuggestion: willParticipate ? (giftSuggestion || '') : '[NO PARTICIPA]',
+      willParticipate: Boolean(willParticipate),
       votedAt: new Date().toISOString()
     };
 
     setUserAngelVote(voteRecord);
     setIsAngelModalOpen(false);
 
-    triggerConfetti();
-    setVoteToast('Participación confirmada exitosamente');
+    if (willParticipate) {
+      triggerConfetti();
+      setVoteToast('Participación confirmada exitosamente');
+    } else {
+      setVoteToast('Respuesta guardada: No participarás en el Ángel');
+    }
     setTimeout(() => setVoteToast(null), 3500);
   };
 
@@ -646,8 +655,14 @@ export default function App() {
         ) : (
           <SecretAngelSection
             userAngelVote={userAngelVote}
-            onOpenVoteModal={() => setIsAngelModalOpen(true)}
-            onChangeVote={() => setIsAngelModalOpen(true)}
+            onOpenVoteModal={(choice = 'yes') => {
+              setAngelModalInitialChoice(choice);
+              setIsAngelModalOpen(true);
+            }}
+            onChangeVote={(choice = 'yes') => {
+              setAngelModalInitialChoice(choice);
+              setIsAngelModalOpen(true);
+            }}
           />
         )}
 
@@ -727,6 +742,7 @@ export default function App() {
       {isAngelModalOpen && (
         <AngelVoteModal
           existingVote={userAngelVote}
+          initialChoice={angelModalInitialChoice}
           onClose={() => setIsAngelModalOpen(false)}
           onSubmitVote={handleAngelVoteSubmit}
         />

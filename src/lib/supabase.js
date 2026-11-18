@@ -432,18 +432,20 @@ export async function toggleCommentLike(commentId) {
 }
 
 /**
- * Obtiene el conteo total de colaboradores inscritos en el Ángel
+ * Obtiene el conteo total de colaboradores inscritos en el Ángel (Sí y No)
  */
 export async function getLiveAngelStats() {
   try {
-    const tableRes = await fetch(`${SUPABASE_URL}/rest/v1/angel_votes?select=id`, {
+    const tableRes = await fetch(`${SUPABASE_URL}/rest/v1/angel_votes?select=id,gift_suggestion`, {
       method: 'GET',
       headers
     });
     if (tableRes.ok) {
       const rows = await tableRes.json();
       if (Array.isArray(rows)) {
-        return { total: rows.length };
+        const yes = rows.filter((r) => r.gift_suggestion !== '[NO PARTICIPA]').length;
+        const no = rows.filter((r) => r.gift_suggestion === '[NO PARTICIPA]').length;
+        return { total: rows.length, yes, no };
       }
     }
     return null;
@@ -487,7 +489,15 @@ export async function checkEmployeeHasVotedAngel(param) {
     if (!res.ok) return { error: true, status: res.status };
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
-      return { found: true, vote: data[0] };
+      const voteData = data[0];
+      const isNotParticipating = voteData.gift_suggestion === '[NO PARTICIPA]';
+      return {
+        found: true,
+        vote: {
+          ...voteData,
+          will_participate: !isNotParticipating
+        }
+      };
     }
     return { found: false };
   } catch (err) {
@@ -499,12 +509,16 @@ export async function checkEmployeeHasVotedAngel(param) {
 /**
  * Guarda o actualiza (upsert) la inscripción y sugerencia de compra en el Ángel
  */
-export async function insertOrUpdateAngelVote({ employeeCode, email, giftSuggestion }) {
+export async function insertOrUpdateAngelVote({ employeeCode, email, giftSuggestion, willParticipate = true }) {
   try {
+    const finalSuggestion = willParticipate === false
+      ? '[NO PARTICIPA]'
+      : (giftSuggestion || '').trim();
+
     const payload = {
       employee_code: employeeCode.trim(),
       email: email.trim(),
-      gift_suggestion: (giftSuggestion || '').trim()
+      gift_suggestion: finalSuggestion
     };
 
     // Intentamos POST con resolución de duplicados (UPSERT)
@@ -530,7 +544,7 @@ export async function insertOrUpdateAngelVote({ employeeCode, email, giftSuggest
               Prefer: 'return=minimal'
             },
             body: JSON.stringify({
-              gift_suggestion: (giftSuggestion || '').trim()
+              gift_suggestion: finalSuggestion
             })
           }
         );

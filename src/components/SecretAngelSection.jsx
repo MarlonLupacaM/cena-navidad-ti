@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Gift,
   CheckCircle2,
+  XCircle,
   RefreshCw,
   ShieldCheck,
   Package,
@@ -15,6 +16,10 @@ export default function SecretAngelSection({
   onChangeVote
 }) {
   const hasVoted = Boolean(userAngelVote);
+  const isNotParticipating = Boolean(
+    userAngelVote &&
+    (userAngelVote.willParticipate === false || userAngelVote.giftSuggestion === '[NO PARTICIPA]')
+  );
 
   return (
     <div className="space-y-8 sm:space-y-10 animate-in fade-in duration-300">
@@ -149,19 +154,54 @@ export default function SecretAngelSection({
                 </h3>
               </div>
 
-              <div className="pt-1">
+              <div className="pt-1 flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3">
                 <button
                   type="button"
-                  onClick={onOpenVoteModal}
-                  className="py-3 px-6 sm:px-8 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm transition-all duration-200 shadow-sm inline-flex items-center gap-2 active:scale-95 cursor-pointer"
+                  onClick={() => onOpenVoteModal('yes')}
+                  className="w-full sm:w-auto py-2.5 sm:py-3 px-5 sm:px-7 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm transition-all duration-200 shadow-sm inline-flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>¡Quiero participar en el Ángel!</span>
+                  <span>¡Quiero participar!</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onOpenVoteModal('no')}
+                  className="w-full sm:w-auto py-2.5 sm:py-3 px-4 sm:px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold text-xs sm:text-sm transition-all duration-200 inline-flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+                >
+                  <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
+                  <span>No voy a participar</span>
+                </button>
+              </div>
+            </div>
+          ) : isNotParticipating ? (
+            /* Estado B1: Registró que NO participa */
+            <div className="space-y-4 w-full flex flex-col items-center text-center">
+              <div className="space-y-1.5">
+                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-500">
+                  Respuesta Registrada
+                </span>
+                <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-800">
+                  No participarás en el Ángel
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 max-w-sm">
+                  Registraste que no formarás parte del intercambio este año.
+                </p>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => onChangeVote('yes')}
+                  className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-600 hover:text-emerald-700 transition cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>¿Cambiaste de opinión? Haz clic aquí para unirte</span>
                 </button>
               </div>
             </div>
           ) : (
-            /* Estado B: Ya se inscribió */
+            /* Estado B2: Ya se inscribió con éxito (SÍ participa) */
             <div className="space-y-4 w-full flex flex-col items-center text-center">
               <div className="space-y-1.5">
                 <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-600">
@@ -175,11 +215,11 @@ export default function SecretAngelSection({
               <div>
                 <button
                   type="button"
-                  onClick={onChangeVote}
+                  onClick={() => onChangeVote()}
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#002559] transition cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>¿Deseas editar tu sugerencia de regalo?</span>
+                  <span>¿Deseas editar tu sugerencia de regalo o respuesta?</span>
                 </button>
               </div>
             </div>
