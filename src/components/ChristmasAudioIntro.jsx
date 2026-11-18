@@ -3,6 +3,18 @@ import { Volume2, VolumeX, Play, Pause, SkipForward, Music, X } from 'lucide-rea
 
 const PLAYLIST = [
   {
+    id: 'burrito-sabanero',
+    title: 'El Burrito Sabanero',
+    sub: 'La Rondallita',
+    src: './el-burrito-sabanero.mp3'
+  },
+  {
+    id: 'toribianitos-popurri',
+    title: 'Los Toribianitos',
+    sub: 'Popurrí de Navidad Mix',
+    src: './los-toribianitos-popurri-navidad.mp3'
+  },
+  {
     id: 'toribianitos',
     title: 'Los Toribianitos',
     sub: 'Villancicos Navideños',
@@ -158,7 +170,7 @@ export default function ChristmasAudioIntro() {
         src={currentTrack.src}
         autoPlay
         playsInline
-        preload="auto"
+        preload="metadata"
       />
 
       {/* Reproductor flotante con función de abrir y cerrar */}

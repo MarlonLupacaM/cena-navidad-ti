@@ -431,3 +431,121 @@ export async function toggleCommentLike(commentId) {
   }
 }
 
+/**
+ * Obtiene el conteo total de colaboradores inscritos en el Ángel
+ */
+export async function getLiveAngelStats() {
+  try {
+    const tableRes = await fetch(`${SUPABASE_URL}/rest/v1/angel_votes?select=id`, {
+      method: 'GET',
+      headers
+    });
+    if (tableRes.ok) {
+      const rows = await tableRes.json();
+      if (Array.isArray(rows)) {
+        return { total: rows.length };
+      }
+    }
+    return null;
+  } catch (err) {
+    console.warn('Fallback local para votos del Ángel:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Verifica si un colaborador ya se inscribió en el Ángel (por código o correo)
+ */
+export async function checkEmployeeHasVotedAngel(param) {
+  try {
+    let code = '';
+    let mail = '';
+    if (typeof param === 'string') {
+      code = param.trim();
+    } else if (param && typeof param === 'object') {
+      code = param.employeeCode ? param.employeeCode.trim() : '';
+      mail = param.email ? param.email.trim().toLowerCase() : '';
+    }
+    if (!code && !mail) return { found: false };
+
+    let query = '';
+    if (code && mail) {
+      query = `or=(employee_code.eq.${encodeURIComponent(code)},email.eq.${encodeURIComponent(mail)})`;
+    } else if (code) {
+      query = `employee_code=eq.${encodeURIComponent(code)}`;
+    } else {
+      query = `email=eq.${encodeURIComponent(mail)}`;
+    }
+
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/angel_votes?select=employee_code,email,gift_suggestion,created_at&${query}&limit=1`,
+      {
+        method: 'GET',
+        headers
+      }
+    );
+    if (!res.ok) return { error: true, status: res.status };
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      return { found: true, vote: data[0] };
+    }
+    return { found: false };
+  } catch (err) {
+    console.warn('Error verificando voto del Ángel en Supabase:', err.message);
+    return { error: true, message: err.message };
+  }
+}
+
+/**
+ * Guarda o actualiza (upsert) la inscripción y sugerencia de compra en el Ángel
+ */
+export async function insertOrUpdateAngelVote({ employeeCode, email, giftSuggestion }) {
+  try {
+    const payload = {
+      employee_code: employeeCode.trim(),
+      email: email.trim(),
+      gift_suggestion: (giftSuggestion || '').trim()
+    };
+
+    // Intentamos POST con resolución de duplicados (UPSERT)
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/angel_votes`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        Prefer: 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      // Fallback: verificar si existe y actualizar con PATCH
+      const existing = await checkEmployeeHasVotedAngel({ employeeCode, email });
+      if (existing && existing.found) {
+        const patchRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/angel_votes?employee_code=eq.${encodeURIComponent(employeeCode.trim())}`,
+          {
+            method: 'PATCH',
+            headers: {
+              ...headers,
+              Prefer: 'return=minimal'
+            },
+            body: JSON.stringify({
+              gift_suggestion: (giftSuggestion || '').trim()
+            })
+          }
+        );
+        if (patchRes.ok) return { success: true, updated: true };
+      }
+
+      const errorText = await res.text();
+      return { success: false, error: errorText };
+    }
+
+    const data = await res.json();
+    return { success: true, data: Array.isArray(data) ? data[0] : data };
+  } catch (err) {
+    console.error('Error guardando voto del Ángel en Supabase:', err);
+    return { success: false, error: err.message };
+  }
+}
+

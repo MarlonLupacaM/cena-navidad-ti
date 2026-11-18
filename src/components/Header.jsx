@@ -1,8 +1,7 @@
 import React from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Utensils, Gift } from 'lucide-react';
 
-export default function Header() {
-
+export default function Header({ activeTab = 'angel', onTabChange }) {
   return (
     <header
       className="relative text-white shadow-xl overflow-hidden border-b-4 border-[#01ACAD]"
@@ -13,7 +12,7 @@ export default function Header() {
       }}
     >
       {/* Hero Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 md:py-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 md:pt-12 pb-5 sm:pb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
           {/* Logo & Title */}
           <div className="space-y-3 sm:space-y-4">
@@ -27,21 +26,63 @@ export default function Header() {
 
             <div className="space-y-1 sm:space-y-2">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-md">
-                Elige tu Cena Navideña
+                {activeTab === 'angel' ? 'Juego del Ángel Navideño' : 'Elige tu Cena Navideña'}
               </h1>
               <p className="text-slate-200 text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed font-medium">
-                Vota por tu local favorito para celebrar juntos este fin de año.
+                {activeTab === 'angel'
+                  ? 'Confirma tu participación en la dinámica del amigo secreto de Caja Arequipa.'
+                  : 'Vota por tu local favorito para celebrar juntos este fin de año.'}
               </p>
             </div>
           </div>
 
-          {/* Indicador minimalista de votación finalizada */}
+          {/* Indicador minimalista de estado */}
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/15 shadow-xs self-start sm:self-center text-white">
-            <Clock className="w-3.5 h-3.5 text-[#01ACAD] shrink-0" />
-            <span className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide whitespace-nowrap">
-              Votación cerrada (10 de nov)
-            </span>
+            {activeTab === 'angel' ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide whitespace-nowrap">
+                  Confirmación abierta
+                </span>
+              </>
+            ) : (
+              <>
+                <Clock className="w-3.5 h-3.5 text-[#01ACAD] shrink-0" />
+                <span className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide whitespace-nowrap">
+                  Votación cerrada (10 de nov)
+                </span>
+              </>
+            )}
           </div>
+        </div>
+
+        {/* Minimalist Tabs Switcher */}
+        <div className="mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-white/10 flex items-center gap-2.5 sm:gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={() => onTabChange?.('cena')}
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'cena'
+                ? 'bg-white text-[#002559] shadow-md scale-102'
+                : 'bg-white/10 text-white/90 hover:bg-white/20 hover:text-white border border-white/10'
+            }`}
+          >
+            <Utensils className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#01ACAD]" />
+            <span>Cena & Menú</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onTabChange?.('angel')}
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'angel'
+                ? 'bg-white text-[#002559] shadow-md scale-102'
+                : 'bg-white/10 text-white/90 hover:bg-white/20 hover:text-white border border-white/10'
+            }`}
+          >
+            <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#01ACAD]" />
+            <span>Juego del Ángel</span>
+          </button>
         </div>
       </div>
     </header>

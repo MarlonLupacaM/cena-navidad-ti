@@ -65,28 +65,30 @@ export default function WinnerAndDishesSection({
         </div>
       </section>
 
-      {/* 🍽️ SECCIÓN DE VOTACIÓN DE PLATOS */}
+      {/* 🍽️ SECCIÓN DE PLATOS */}
       <section className="space-y-4 sm:space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pb-3 border-b border-slate-200">
           <div>
             <div className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#01ACAD] mb-0.5">
               <Utensils className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>Fase 2 de la Elección</span>
+              <span>Menú Oficial</span>
             </div>
             <h2 className="text-lg sm:text-2xl font-black text-[#002559] leading-snug">
-              Elige tu Paquete Navideño de Comida
+              Paquetes Navideños de Comida
             </h2>
           </div>
 
-          {/* Indicador solo si el usuario ya votó */}
-          {userDishVote && (
-            <div className="self-start sm:self-center flex items-center gap-2">
+          <div className="self-start sm:self-center flex items-center gap-2">
+            <span className="bg-slate-100 text-slate-500 border border-slate-200 text-xs font-bold px-3 py-1.5 rounded-full">
+              Votación cerrada
+            </span>
+            {userDishVote && (
               <div className="bg-[#E8F9F9] border border-[#01ACAD] text-[#002559] px-3 sm:px-3.5 py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-black flex items-center gap-1.5 shadow-2xs">
                 <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#01ACAD] shrink-0" />
-                <span>Ya votaste por: {userDishVote.packageTitle || 'Tu menú'}</span>
+                <span>Elegiste: {userDishVote.packageTitle || 'Tu menú'}</span>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Grid de los 4 Paquetes Navideños: 1x1 en móvil y 2x2 en pantallas medianas/grandes */}
@@ -133,32 +135,24 @@ export default function WinnerAndDishesSection({
                   </div>
                 </div>
 
-                {/* Botón de Votación */}
+                {/* Botón de Votación (Deshabilitado) */}
                 <div className="mt-5 pt-3 border-t border-slate-100">
                   <button
                     type="button"
-                    onClick={() => onVoteDishClick(pkg)}
-                    disabled={Boolean(userDishVote)}
-                    className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl font-black text-xs sm:text-sm transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 ${
+                    disabled
+                    className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 cursor-not-allowed select-none ${
                       isVotedByMe
-                        ? 'bg-[#01ACAD] text-white cursor-default'
-                        : userDishVote
-                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none'
-                        : 'bg-[#002559] hover:bg-[#001c47] text-white'
+                        ? 'bg-[#E8F9F9] text-[#002559] border border-[#01ACAD]'
+                        : 'bg-slate-100 text-slate-400 border border-slate-200'
                     }`}
                   >
                     {isVotedByMe ? (
                       <>
-                        <CheckCircle2 className="w-4 h-4 text-white" />
+                        <CheckCircle2 className="w-4 h-4 text-[#01ACAD]" />
                         <span>Elegido por ti</span>
                       </>
-                    ) : userDishVote ? (
-                      <span>Votado</span>
                     ) : (
-                      <>
-                        <Utensils className="w-3.5 h-3.5 text-[#01ACAD]" />
-                        <span>Votar por este Menú</span>
-                      </>
+                      <span>Votación cerrada</span>
                     )}
                   </button>
                 </div>

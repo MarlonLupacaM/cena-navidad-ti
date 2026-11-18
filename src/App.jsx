@@ -9,7 +9,10 @@ import {
   checkEmployeeHasVoted,
   getLiveDishVoteCounts,
   insertDishVote,
-  checkEmployeeHasVotedDish
+  checkEmployeeHasVotedDish,
+  getLiveAngelStats,
+  insertOrUpdateAngelVote,
+  checkEmployeeHasVotedAngel
 } from './lib/supabase';
 import Header from './components/Header';
 import VenueCard from './components/VenueCard';
@@ -23,6 +26,8 @@ import ChristmasAudioIntro from './components/ChristmasAudioIntro';
 import DuplicateVoteModal from './components/DuplicateVoteModal';
 import WinnerAndDishesSection from './components/WinnerAndDishesSection';
 import DishVoteConfirmationModal from './components/DishVoteConfirmationModal';
+import SecretAngelSection from './components/SecretAngelSection';
+import AngelVoteModal from './components/AngelVoteModal';
 
 export default function App() {
   const [duplicateVoteData, setDuplicateVoteData] = useState(null);
@@ -108,6 +113,45 @@ export default function App() {
     }
   }, [userDishVote]);
 
+  // Estados para la pestaña del Juego del Ángel
+  const [activeTab, setActiveTab] = useState('angel'); // 'cena' | 'angel'
+  const [isAngelModalOpen, setIsAngelModalOpen] = useState(false);
+  const [userAngelVote, setUserAngelVote] = useState(() => {
+    const saved = localStorage.getItem('caja_navidad_user_angel_vote');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return null;
+  });
+
+  const [angelStats, setAngelStats] = useState(() => {
+    const saved = localStorage.getItem('caja_navidad_angel_stats');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return { yes: 48, no: 6 };
+  });
+
+  useEffect(() => {
+    if (userAngelVote) {
+      localStorage.setItem('caja_navidad_user_angel_vote', JSON.stringify(userAngelVote));
+    } else {
+      localStorage.removeItem('caja_navidad_user_angel_vote');
+    }
+  }, [userAngelVote]);
+
+  useEffect(() => {
+    localStorage.setItem('caja_navidad_angel_stats', JSON.stringify(angelStats));
+  }, [angelStats]);
+
   // Al iniciar la app (y al reenfocar la pestaña), consultar a Supabase si el voto guardado aún existe.
   // Si fue eliminado manualmente en Supabase, se limpia el estado y localStorage para permitir votar de nuevo.
   useEffect(() => {
@@ -145,12 +189,67 @@ export default function App() {
       }
     };
 
+    const verifySavedAngelVote = async () => {
+      const saved = localStorage.getItem('caja_navidad_user_angel_vote');
+      if (!saved) return;
+
+      try {
+        const parsed = JSON.parse(saved);
+        if (!parsed?.employeeCode && !parsed?.email) return;
+
+        const checkRes = await checkEmployeeHasVotedAngel({
+          employeeCode: parsed.employeeCode,
+          email: parsed.email
+        });
+        if (isCancelled) return;
+
+        if (checkRes && checkRes.found === false) {
+          console.info('Voto del Ángel eliminado en Supabase. Desbloqueando colaborador...');
+          setUserAngelVote(null);
+          localStorage.removeItem('caja_navidad_user_angel_vote');
+        } else if (checkRes && checkRes.found === true && checkRes.vote) {
+          const dbVote = checkRes.vote;
+          setUserAngelVote((prev) => ({
+            ...prev,
+            giftSuggestion: dbVote.gift_suggestion || '',
+            email: dbVote.email || parsed.email,
+            employeeCode: dbVote.employee_code || parsed.employeeCode
+          }));
+        }
+      } catch (err) {
+        console.error('Error al verificar persistencia de voto del Ángel:', err);
+      }
+    };
+
     verifySavedDishVote();
+    verifySavedAngelVote();
 
     window.addEventListener('focus', verifySavedDishVote);
+    window.addEventListener('focus', verifySavedAngelVote);
     return () => {
       isCancelled = true;
       window.removeEventListener('focus', verifySavedDishVote);
+      window.removeEventListener('focus', verifySavedAngelVote);
+    };
+  }, []);
+
+  // Sincronización en tiempo real de estadísticas del Ángel desde Supabase
+  useEffect(() => {
+    let isMounted = true;
+    const syncAngelStats = async () => {
+      const live = await getLiveAngelStats();
+      if (!isMounted || !live) return;
+      setAngelStats((prev) => ({
+        ...prev,
+        yes: typeof live.yes === 'number' ? live.yes : prev.yes,
+        no: typeof live.no === 'number' ? live.no : prev.no
+      }));
+    };
+    syncAngelStats();
+    const interval = setInterval(syncAngelStats, 10000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
     };
   }, []);
 
@@ -396,6 +495,33 @@ export default function App() {
     setTimeout(() => setVoteToast(null), 3500);
   };
 
+  const handleAngelVoteSubmit = async ({ email, employeeCode, giftSuggestion }) => {
+    // 1. Guardar o actualizar en Supabase (tabla angel_votes con sólo las columnas requeridas)
+    try {
+      insertOrUpdateAngelVote({
+        email,
+        employeeCode,
+        giftSuggestion
+      });
+    } catch (err) {
+      console.warn('Error guardando en Supabase, usando persistencia local:', err);
+    }
+
+    const voteRecord = {
+      email,
+      employeeCode,
+      giftSuggestion: giftSuggestion || '',
+      votedAt: new Date().toISOString()
+    };
+
+    setUserAngelVote(voteRecord);
+    setIsAngelModalOpen(false);
+
+    triggerConfetti();
+    setVoteToast('Participación confirmada exitosamente');
+    setTimeout(() => setVoteToast(null), 3500);
+  };
+
   const handleToggleCompare = (venueId) => {
     setComparedVenueIds((prev) => {
       if (prev.includes(venueId)) {
@@ -444,79 +570,89 @@ export default function App() {
 
       {/* Floating Notification Toast */}
       {voteToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#002559] text-white px-4 py-2.5 rounded-xl shadow-lg border border-[#01ACAD] flex items-center gap-2 text-xs font-bold animate-in fade-in slide-in-from-bottom-2 duration-200">
-          <span className="text-[#01ACAD]">✓</span>
-          <span>{voteToast}</span>
+        <div className="fixed bottom-6 right-6 z-50 bg-white text-slate-900 border-2 border-emerald-500 px-5 py-3.5 rounded-2xl shadow-2xl text-xs sm:text-sm font-black animate-in fade-in slide-in-from-bottom-3 duration-200">
+          {voteToast}
         </div>
       )}
 
-      {/* Hero Header */}
+      {/* Hero Header con Pestañas de Navegación */}
       <Header
         totalVotes={totalVotes}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-8 sm:space-y-10">
-        {/* 🏆 SECCIÓN GANADOR DON FACU + VOTACIÓN DE PLATOS (FASE 2) */}
-        <WinnerAndDishesSection
-          dishVotes={dishVotes}
-          userDishVote={userDishVote}
-          onVoteDishClick={(pkg) => {
-            if (userDishVote) {
-              setDuplicateVoteData({
-                employeeCode: userDishVote.employeeCode,
-                email: userDishVote.email
-              });
-              return;
-            }
-            setVotingForDishPkg(pkg);
-          }}
-          onViewDonFacuDetails={() => {
-            const donFacuVenue = venues.find((v) => v.id === 'don-facu');
-            if (donFacuVenue) setViewingVenue(donFacuVenue);
-          }}
-        />
+        {activeTab === 'cena' ? (
+          <>
+            {/* 🏆 SECCIÓN GANADOR DON FACU + VOTACIÓN DE PLATOS (FASE 2) */}
+            <WinnerAndDishesSection
+              dishVotes={dishVotes}
+              userDishVote={userDishVote}
+              onVoteDishClick={(pkg) => {
+                if (userDishVote) {
+                  setDuplicateVoteData({
+                    employeeCode: userDishVote.employeeCode,
+                    email: userDishVote.email
+                  });
+                  return;
+                }
+                setVotingForDishPkg(pkg);
+              }}
+              onViewDonFacuDetails={() => {
+                const donFacuVenue = venues.find((v) => v.id === 'don-facu');
+                if (donFacuVenue) setViewingVenue(donFacuVenue);
+              }}
+            />
 
-        {/* Historial de Sedes Candidatas (Votación Concluida) */}
-        <section className="space-y-3 sm:space-y-4 pt-4 border-t border-slate-200/80">
-          <div className="flex justify-between items-center flex-wrap gap-2 sm:gap-3">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400">
-                  Fase 1 Concluida
-                </span>
-                <span className="text-[10px] sm:text-xs font-extrabold bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full whitespace-nowrap">
-                  Cerrada el 10 nov
-                </span>
+            {/* Historial de Sedes Candidatas (Votación Concluida) */}
+            <section className="space-y-3 sm:space-y-4 pt-4 border-t border-slate-200/80">
+              <div className="flex justify-between items-center flex-wrap gap-2 sm:gap-3">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400">
+                      Fase 1 Concluida
+                    </span>
+                    <span className="text-[10px] sm:text-xs font-extrabold bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                      Cerrada el 10 nov
+                    </span>
+                  </div>
+                  <h2 className="text-base sm:text-xl font-black text-slate-700 leading-snug">
+                    Resultados de Sedes Candidatas
+                  </h2>
+                </div>
               </div>
-              <h2 className="text-base sm:text-xl font-black text-slate-700 leading-snug">
-                Resultados de Sedes Candidatas
-              </h2>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {orderedVenues.map((venue) => (
-                <VenueCard
-                  key={venue.id}
-                  venue={venue}
-                  totalVotes={totalVotes}
-                  userVote={userVote}
-                  onVoteClick={() => {
-                    // Votación cerrada
-                  }}
-                  onDetailsClick={(v) => setViewingVenue(v)}
-                  isLeader={venue.id === 'don-facu'}
-                  isCompared={comparedVenueIds.includes(venue.id)}
-                  onToggleCompare={handleToggleCompare}
-                />
-              ))}
-            </div>
-        </section>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {orderedVenues.map((venue) => (
+                  <VenueCard
+                    key={venue.id}
+                    venue={venue}
+                    totalVotes={totalVotes}
+                    userVote={userVote}
+                    onVoteClick={() => {
+                      // Votación cerrada
+                    }}
+                    onDetailsClick={(v) => setViewingVenue(v)}
+                    isLeader={venue.id === 'don-facu'}
+                    isCompared={comparedVenueIds.includes(venue.id)}
+                    onToggleCompare={handleToggleCompare}
+                  />
+                ))}
+              </div>
+            </section>
 
-        {/* Interactive DJ Song Requests & Messages Wall */}
-        <ChristmasPlaylistAndComments />
-
+            {/* Interactive DJ Song Requests & Messages Wall */}
+            <ChristmasPlaylistAndComments />
+          </>
+        ) : (
+          <SecretAngelSection
+            userAngelVote={userAngelVote}
+            onOpenVoteModal={() => setIsAngelModalOpen(true)}
+            onChangeVote={() => setIsAngelModalOpen(true)}
+          />
+        )}
       </main>
 
       {/* Footer styled with white background and logo_CJ_blanco.png */}
@@ -584,6 +720,15 @@ export default function App() {
           pkg={votingForDishPkg}
           onClose={() => setVotingForDishPkg(null)}
           onSubmitVote={handleDishVoteSubmit}
+        />
+      )}
+
+      {/* Modal para Inscripción en el Juego del Ángel */}
+      {isAngelModalOpen && (
+        <AngelVoteModal
+          existingVote={userAngelVote}
+          onClose={() => setIsAngelModalOpen(false)}
+          onSubmitVote={handleAngelVoteSubmit}
         />
       )}
     </div>
