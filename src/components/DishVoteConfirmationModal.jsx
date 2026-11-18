@@ -81,7 +81,7 @@ export default function DishVoteConfirmationModal({
       >
         {/* Header con el fondo SVG de la pantalla principal (idéntico al modal de sede) */}
         <div
-          className="p-5 sm:p-7 relative border-b border-slate-200 overflow-hidden"
+          className="p-4 sm:p-7 relative border-b border-slate-200 overflow-hidden pr-12"
           style={{
             backgroundColor: '#F4F7FB',
             backgroundImage:
@@ -92,38 +92,38 @@ export default function DishVoteConfirmationModal({
         >
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 sm:top-5 sm:right-5 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white text-slate-600 flex items-center justify-center transition shadow-xs border border-slate-200/80 cursor-pointer"
+            className="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white text-slate-600 flex items-center justify-center transition shadow-xs border border-slate-200/80 cursor-pointer"
             title="Cerrar"
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          <h2 className="text-xl sm:text-2xl font-black text-[#002559] leading-tight">
+          <h2 className="text-base sm:text-2xl font-black text-[#002559] leading-tight">
             Confirmar Elección de Menú
           </h2>
-          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
+          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-0.5 sm:mt-1">
             Don Facu • Cena Navideña 2026
           </p>
         </div>
 
         {/* Resumen del Paquete Seleccionado amplio y cómodo en desktop */}
-        <div className="p-5 sm:p-7 pb-2 sm:pb-3">
-          <div className="bg-[#F4F7FB] border border-slate-200 rounded-2xl p-4 sm:p-5 flex items-center gap-4 sm:gap-5 shadow-2xs">
+        <div className="p-4 sm:p-7 pb-2 sm:pb-3">
+          <div className="bg-[#F4F7FB] border border-slate-200 rounded-2xl p-3.5 sm:p-5 flex items-center gap-3.5 sm:gap-5 shadow-2xs">
             <img
               src="./donfacu/imagen (1).jpg"
               alt="Don Facu"
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover shrink-0 bg-white border border-slate-200/80 shadow-xs"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl object-cover shrink-0 bg-white border border-slate-200/80 shadow-xs"
             />
-            <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="text-base sm:text-lg font-black text-[#002559] truncate">
+            <div className="min-w-0 flex-1 space-y-0.5 sm:space-y-1">
+              <div className="flex items-center justify-between gap-2 sm:gap-3">
+                <h3 className="text-sm sm:text-lg font-black text-[#002559] truncate">
                   {pkg.title}
                 </h3>
-                <span className="text-base sm:text-lg font-black text-[#01ACAD] shrink-0">
+                <span className="text-sm sm:text-lg font-black text-[#01ACAD] shrink-0">
                   {pkg.price}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium line-clamp-1">
+              <p className="text-[11px] sm:text-sm text-slate-600 font-medium line-clamp-1">
                 {pkg.highlight}
               </p>
             </div>
@@ -131,7 +131,7 @@ export default function DishVoteConfirmationModal({
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-7 pt-2 sm:pt-3 space-y-4 sm:space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-7 pt-2 sm:pt-3 space-y-3.5 sm:space-y-5">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-2xl flex items-center gap-2.5 font-bold text-xs sm:text-sm animate-in fade-in">
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />

@@ -642,9 +642,6 @@ export default function App() {
                 ))}
               </div>
             </section>
-
-            {/* Interactive DJ Song Requests & Messages Wall */}
-            <ChristmasPlaylistAndComments />
           </>
         ) : (
           <SecretAngelSection
@@ -653,6 +650,9 @@ export default function App() {
             onChangeVote={() => setIsAngelModalOpen(true)}
           />
         )}
+
+        {/* Interactive DJ Song Requests & Messages Wall (Tablero de opiniones al final) */}
+        <ChristmasPlaylistAndComments />
       </main>
 
       {/* Footer styled with white background and logo_CJ_blanco.png */}

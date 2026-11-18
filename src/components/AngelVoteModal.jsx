@@ -52,12 +52,12 @@ export default function AngelVoteModal({
       onClick={onClose}
     >
       <div
-        className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative bg-white w-full max-w-lg rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header con estilo Caja Arequipa */}
         <div
-          className="p-5 sm:p-6 relative border-b border-slate-200 overflow-hidden"
+          className="p-4 sm:p-6 relative border-b border-slate-200 overflow-hidden pr-12"
           style={{
             backgroundColor: '#F4F7FB',
             backgroundImage:
@@ -68,7 +68,7 @@ export default function AngelVoteModal({
         >
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/80 hover:bg-white text-slate-600 flex items-center justify-center transition shadow-xs border border-slate-200/80 cursor-pointer"
+            className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/80 hover:bg-white text-slate-600 flex items-center justify-center transition shadow-xs border border-slate-200/80 cursor-pointer"
             title="Cerrar"
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -78,17 +78,17 @@ export default function AngelVoteModal({
             <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#01ACAD] block">
               Dinámica Oficial
             </span>
-            <h2 className="text-lg sm:text-xl font-black text-[#002559]">
+            <h2 className="text-base sm:text-xl font-black text-[#002559] leading-snug">
               {existingVote ? 'Editar mi Sugerencia' : 'Inscripción al Juego del Ángel'}
             </h2>
           </div>
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 sm:space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5 sm:space-y-4">
           {/* Error Alert */}
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
+            <div className="p-2.5 sm:p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
               <span>{error}</span>
             </div>
@@ -96,12 +96,12 @@ export default function AngelVoteModal({
 
           {/* Campo: Correo Institucional */}
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wide">
+            <label className="block text-[11px] sm:text-xs font-black text-slate-700 mb-1 uppercase tracking-wide">
               Correo Institucional <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <Mail className="w-4 h-4" />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <input
                 type="email"
@@ -112,19 +112,19 @@ export default function AngelVoteModal({
                   setEmail(e.target.value);
                 }}
                 placeholder="ejemplo@cajaarequipa.pe"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#01ACAD] focus:bg-white text-slate-800 transition"
+                className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#01ACAD] focus:bg-white text-slate-800 transition"
               />
             </div>
           </div>
 
           {/* Campo: Código de Colaborador */}
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wide">
+            <label className="block text-[11px] sm:text-xs font-black text-slate-700 mb-1 uppercase tracking-wide">
               Código de Colaborador <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <CreditCard className="w-4 h-4" />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <input
                 type="text"
@@ -135,18 +135,18 @@ export default function AngelVoteModal({
                   setEmployeeCode(e.target.value);
                 }}
                 placeholder="Ej. C12345"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#01ACAD] focus:bg-white text-slate-800 transition"
+                className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#01ACAD] focus:bg-white text-slate-800 transition"
               />
             </div>
           </div>
 
           {/* Campo: Sugerencia de Compra / Regalo Principal */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-black text-slate-700 uppercase tracking-wide">
+            <div className="flex items-center justify-between mb-1 gap-2 flex-wrap">
+              <label className="block text-[11px] sm:text-xs font-black text-slate-700 uppercase tracking-wide">
                 ¿Qué te gustaría de regalo principal? <span className="text-slate-400 font-normal">(S/ 50)</span>
               </label>
-              <span className="text-[10px] font-bold text-[#01ACAD] uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-[#01ACAD] uppercase tracking-wider shrink-0">
                 Opcional
               </span>
             </div>
@@ -155,33 +155,33 @@ export default function AngelVoteModal({
                 rows={2}
                 value={giftSuggestion}
                 onChange={(e) => setGiftSuggestion(e.target.value)}
-                placeholder="Ej. Taza térmica, libro, chocolates finos, audífonos, prenda talla M, etc."
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#01ACAD] focus:bg-white text-slate-800 transition resize-none"
+                placeholder="Ej. Taza térmica, libro, chocolates, etc."
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#01ACAD] focus:bg-white text-slate-800 transition resize-none leading-relaxed"
               />
             </div>
           </div>
 
           {/* Botones de acción */}
-          <div className="pt-2 flex items-center gap-3">
+          <div className="pt-1.5 flex items-center gap-2.5 sm:gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs sm:text-sm hover:bg-slate-50 transition cursor-pointer"
+              className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs sm:text-sm hover:bg-slate-50 transition cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-2.5 px-4 rounded-xl text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-sm cursor-pointer bg-emerald-600 hover:bg-emerald-700 active:scale-98"
+              className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm cursor-pointer bg-emerald-600 hover:bg-emerald-700 active:scale-98"
             >
               {isSubmitting ? (
                 <span>Guardando...</span>
               ) : (
                 <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{existingVote ? 'Actualizar Datos' : 'Confirmar Inscripción'}</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>{existingVote ? 'Actualizar' : 'Confirmar'}</span>
                 </>
               )}
             </button>

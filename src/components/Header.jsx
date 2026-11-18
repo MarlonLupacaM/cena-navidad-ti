@@ -36,24 +36,15 @@ export default function Header({ activeTab = 'angel', onTabChange }) {
             </div>
           </div>
 
-          {/* Indicador minimalista de estado */}
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/15 shadow-xs self-start sm:self-center text-white">
-            {activeTab === 'angel' ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide whitespace-nowrap">
-                  Confirmación abierta
-                </span>
-              </>
-            ) : (
-              <>
-                <Clock className="w-3.5 h-3.5 text-[#01ACAD] shrink-0" />
-                <span className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide whitespace-nowrap">
-                  Votación cerrada (10 de nov)
-                </span>
-              </>
-            )}
-          </div>
+          {/* Indicador minimalista de estado (solo en votación de sede) */}
+          {activeTab === 'cena' && (
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/15 shadow-xs self-start sm:self-center text-white">
+              <Clock className="w-3.5 h-3.5 text-[#01ACAD] shrink-0" />
+              <span className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide whitespace-nowrap">
+                Votación cerrada (10 de nov)
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Minimalist Tabs Switcher */}
