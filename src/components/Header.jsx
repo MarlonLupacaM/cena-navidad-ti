@@ -31,17 +31,17 @@ export default function Header({ activeTab = 'angel', onTabChange }) {
               <p className="text-slate-200 text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed font-medium">
                 {activeTab === 'angel'
                   ? 'Confirma tu participación en la dinámica del amigo secreto de Caja Arequipa.'
-                  : 'Vota por tu local favorito para celebrar juntos este fin de año.'}
+                  : 'Elige tu paquete de comida favorito para celebrar juntos este fin de año en Don Facu.'}
               </p>
             </div>
           </div>
 
-          {/* Indicador minimalista de estado (solo en votación de sede) */}
+          {/* Indicador minimalista de estado */}
           {activeTab === 'cena' && (
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/15 shadow-xs self-start sm:self-center text-white">
-              <Clock className="w-3.5 h-3.5 text-[#01ACAD] shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
               <span className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide whitespace-nowrap">
-                Votación cerrada (10 de nov)
+                Elección de menú abierta
               </span>
             </div>
           )}
