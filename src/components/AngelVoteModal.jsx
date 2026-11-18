@@ -14,15 +14,7 @@ export default function AngelVoteModal({
     };
   }, []);
 
-  const [willParticipate, setWillParticipate] = useState(() => {
-    if (typeof initialChoice === 'boolean') return initialChoice;
-    if (initialChoice === 'no') return false;
-    if (initialChoice === 'yes') return true;
-    if (existingVote && (existingVote.willParticipate === false || existingVote.giftSuggestion === '[NO PARTICIPA]')) {
-      return false;
-    }
-    return true;
-  });
+  const willParticipate = initialChoice !== 'no' && existingVote?.giftSuggestion !== '[NO PARTICIPA]';
 
   const [email, setEmail] = useState(existingVote?.email || '');
   const [employeeCode, setEmployeeCode] = useState(existingVote?.employeeCode || '');
@@ -72,7 +64,7 @@ export default function AngelVoteModal({
       >
         {/* Header con estilo Caja Arequipa */}
         <div
-          className="p-4 sm:p-6 relative border-b border-slate-200 overflow-hidden pr-12"
+          className="p-3.5 sm:p-5 relative border-b border-slate-200 overflow-hidden pr-11"
           style={{
             backgroundColor: '#F4F7FB',
             backgroundImage:
@@ -83,19 +75,21 @@ export default function AngelVoteModal({
         >
           <button
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/80 hover:bg-white text-slate-600 flex items-center justify-center transition shadow-xs border border-slate-200/80 cursor-pointer"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-slate-600 flex items-center justify-center transition shadow-xs border border-slate-200/80 cursor-pointer"
             title="Cerrar"
           >
-            <X className="w-4 h-4 sm:w-5 sm:h-5" />
+            <X className="w-4 h-4" />
           </button>
 
           <div>
             <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#01ACAD] block">
               Dinámica Oficial
             </span>
-            <h2 className="text-base sm:text-xl font-black text-[#002559] leading-snug">
+            <h2 className="text-sm sm:text-lg font-black text-[#002559] leading-tight">
               {existingVote
-                ? 'Editar mi Respuesta'
+                ? willParticipate
+                  ? 'Editar mi Sugerencia'
+                  : 'Registro de No Participación'
                 : willParticipate
                 ? 'Inscripción al Juego del Ángel'
                 : 'Confirmar No Participación'}
@@ -104,41 +98,7 @@ export default function AngelVoteModal({
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5 sm:space-y-4">
-          {/* Selector de Decisión: Participar vs No Participar */}
-          <div>
-            <label className="block text-[11px] sm:text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wide">
-              Tu Decisión:
-            </label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200/80">
-              <button
-                type="button"
-                onClick={() => setWillParticipate(true)}
-                className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  willParticipate
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Sí participaré</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setWillParticipate(false)}
-                className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  !willParticipate
-                    ? 'bg-slate-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>No voy a participar</span>
-              </button>
-            </div>
-          </div>
-
+        <form onSubmit={handleSubmit} className="p-3.5 sm:p-5 space-y-3 sm:space-y-4">
           {/* Error Alert */}
           {error && (
             <div className="p-2.5 sm:p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
@@ -149,7 +109,7 @@ export default function AngelVoteModal({
 
           {/* Campo: Correo Institucional */}
           <div>
-            <label className="block text-[11px] sm:text-xs font-black text-slate-700 mb-1 uppercase tracking-wide">
+            <label className="block text-[10px] sm:text-xs font-black text-slate-700 mb-1 uppercase tracking-wide">
               Correo Institucional <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
@@ -172,7 +132,7 @@ export default function AngelVoteModal({
 
           {/* Campo: Código de Colaborador */}
           <div>
-            <label className="block text-[11px] sm:text-xs font-black text-slate-700 mb-1 uppercase tracking-wide">
+            <label className="block text-[10px] sm:text-xs font-black text-slate-700 mb-1 uppercase tracking-wide">
               Código de Colaborador <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
@@ -197,7 +157,7 @@ export default function AngelVoteModal({
           {willParticipate ? (
             <div>
               <div className="flex items-center justify-between mb-1 gap-2 flex-wrap">
-                <label className="block text-[11px] sm:text-xs font-black text-slate-700 uppercase tracking-wide">
+                <label className="block text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-wide">
                   ¿Qué te gustaría de regalo principal? <span className="text-slate-400 font-normal">(S/ 50)</span>
                 </label>
                 <span className="text-[10px] font-bold text-[#01ACAD] uppercase tracking-wider shrink-0">
@@ -218,8 +178,8 @@ export default function AngelVoteModal({
             /* Si NO participa: Nota informativa */
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-xs flex items-start gap-2.5">
               <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-              <span className="leading-relaxed font-medium">
-                Registraremos que no participarás para no asignarte ningún amigo secreto en el sorteo. Si luego cambias de opinión, podrás unirte antes del inicio.
+              <span className="leading-relaxed font-medium text-[11px] sm:text-xs">
+                Registraremos que no participarás para no asignarte ningún amigo secreto en el sorteo.
               </span>
             </div>
           )}
@@ -248,12 +208,12 @@ export default function AngelVoteModal({
               ) : willParticipate ? (
                 <>
                   <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>{existingVote ? 'Actualizar Datos' : 'Confirmar Inscripción'}</span>
+                  <span>{existingVote ? 'Actualizar' : 'Confirmar'}</span>
                 </>
               ) : (
                 <>
                   <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>Registrar No Participación</span>
+                  <span>Registrar</span>
                 </>
               )}
             </button>

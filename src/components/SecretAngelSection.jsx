@@ -175,51 +175,36 @@ export default function SecretAngelSection({
               </div>
             </div>
           ) : isNotParticipating ? (
-            /* Estado B1: Registró que NO participa */
-            <div className="space-y-4 w-full flex flex-col items-center text-center">
-              <div className="space-y-1.5">
-                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-500">
-                  Respuesta Registrada
-                </span>
-                <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-800">
-                  No participarás en el Ángel
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-500 max-w-sm">
-                  Registraste que no formarás parte del intercambio este año.
-                </p>
-              </div>
+            /* Estado B1: Registró que NO participa (no se permite cambiar según regla) */
+            <div className="space-y-2 sm:space-y-2.5 w-full flex flex-col items-center text-center">
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-500">
+                Respuesta Registrada
+              </span>
+              <h3 className="text-base sm:text-xl lg:text-2xl font-black text-slate-800">
+                No participarás en el Ángel
+              </h3>
+              <p className="text-[11px] sm:text-xs text-slate-500 max-w-sm">
+                Registraste que no formarás parte del intercambio este año.
+              </p>
+            </div>
+          ) : (
+            /* Estado B2: Ya se inscribió con éxito (SÍ participa) */
+            <div className="space-y-2 sm:space-y-3 w-full flex flex-col items-center text-center">
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-600">
+                Inscripción Confirmada
+              </span>
+              <h3 className="text-base sm:text-xl lg:text-2xl font-black text-[#002559]">
+                ¡Ya estás participando!
+              </h3>
 
               <div>
                 <button
                   type="button"
                   onClick={() => onChangeVote('yes')}
-                  className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-600 hover:text-emerald-700 transition cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-slate-500 hover:text-[#002559] transition cursor-pointer"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>¿Cambiaste de opinión? Haz clic aquí para unirte</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            /* Estado B2: Ya se inscribió con éxito (SÍ participa) */
-            <div className="space-y-4 w-full flex flex-col items-center text-center">
-              <div className="space-y-1.5">
-                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-600">
-                  Inscripción Confirmada
-                </span>
-                <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#002559]">
-                  ¡Ya estás participando!
-                </h3>
-              </div>
-
-              <div>
-                <button
-                  type="button"
-                  onClick={() => onChangeVote()}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#002559] transition cursor-pointer"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>¿Deseas editar tu sugerencia de regalo o respuesta?</span>
+                  <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <span>¿Deseas editar tu sugerencia de regalo?</span>
                 </button>
               </div>
             </div>
@@ -227,7 +212,7 @@ export default function SecretAngelSection({
         </div>
 
         {/* Personaje Cóndor Pregunta centrado en su propio lado derecho */}
-        <div className="flex items-center justify-center w-full h-48 sm:h-56 md:h-64 lg:h-72">
+        <div className="flex items-center justify-center w-full h-44 sm:h-56 md:h-64 lg:h-72">
           <img
             src="./Img/CondorPregunta.png"
             alt="Cóndor Pregunta"
@@ -237,91 +222,89 @@ export default function SecretAngelSection({
       </section>
 
       {/* 4. Normas de Convivencia y Buen Compartir */}
-      <section className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-sm space-y-4">
+      <section className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 p-4 sm:p-7 shadow-sm space-y-3 sm:space-y-4">
         <div className="flex items-center gap-2">
-          <HeartHandshake className="w-5 h-5 text-[#01ACAD]" />
-          <div>
-            <h3 className="text-base sm:text-lg font-black text-[#002559]">
-              Normas de Convivencia y Buen Compartir
-            </h3>
-          </div>
+          <HeartHandshake className="w-4 h-4 sm:w-5 sm:h-5 text-[#01ACAD] shrink-0" />
+          <h3 className="text-sm sm:text-base md:text-lg font-black text-[#002559]">
+            Normas de Convivencia y Buen Compartir
+          </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-xs">
           {/* Norma 1: La Cajita Navideña */}
-          <div className="p-4 rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1.5">
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1 sm:space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 font-black text-xs flex items-center justify-center">
-                <Package className="w-3.5 h-3.5 text-amber-800" />
+              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-amber-100 text-amber-800 font-black text-[11px] sm:text-xs flex items-center justify-center shrink-0">
+                <Package className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-800" />
               </span>
-              <span className="font-black text-slate-800">La Cajita Navideña Común</span>
+              <span className="font-black text-xs sm:text-sm text-slate-800">La Cajita Navideña Común</span>
             </div>
-            <p className="text-slate-600 leading-relaxed font-medium">
+            <p className="text-slate-600 leading-relaxed font-medium text-[11px] sm:text-xs">
               Se habilitará una cajita común en la oficina donde todos depositarán los regalos de su <strong>amigo secreto</strong> con su <strong>nombre bien visible</strong>. Así aseguramos una entrega ordenada y protegemos el anonimato.
             </p>
           </div>
 
           {/* Norma 2: No Perecibles */}
-          <div className="p-4 rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1.5">
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1 sm:space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-800 font-black text-xs flex items-center justify-center">
+              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-rose-100 text-rose-800 font-black text-[11px] sm:text-xs flex items-center justify-center shrink-0">
                 2
               </span>
-              <span className="font-black text-slate-800">Solo Cosas No Perecibles</span>
+              <span className="font-black text-xs sm:text-sm text-slate-800">Solo Cosas No Perecibles</span>
             </div>
-            <p className="text-slate-600 leading-relaxed font-medium">
+            <p className="text-slate-600 leading-relaxed font-medium text-[11px] sm:text-xs">
               Para los regalos diarios, elegir <strong>artículos no perecibles</strong> (galletas, chocolates, café, tés, dulces sellados o detalles útiles). Evitar productos que se descompongan con el calor o requieran refrigeración.
             </p>
           </div>
 
           {/* Norma 3: Respeto a los Montos */}
-          <div className="p-4 rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1.5">
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1 sm:space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 font-black text-xs flex items-center justify-center">
-                <Scale className="w-3.5 h-3.5 text-emerald-800" />
+              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-emerald-100 text-emerald-800 font-black text-[11px] sm:text-xs flex items-center justify-center shrink-0">
+                <Scale className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-800" />
               </span>
-              <span className="font-black text-slate-800">Respeto a los Montos (S/ 5 a S/ 50)</span>
+              <span className="font-black text-xs sm:text-sm text-slate-800">Respeto a los Montos (S/ 5 a S/ 50)</span>
             </div>
-            <p className="text-slate-600 leading-relaxed font-medium">
+            <p className="text-slate-600 leading-relaxed font-medium text-[11px] sm:text-xs">
               El rango oficial es de <strong>mínimo S/ 5 para diarios y S/ 50 para el principal</strong>. <strong>No exigir más ni menos de eso</strong>; todo detalle que cumpla con el monto pactado es plenamente respetado y valioso.
             </p>
           </div>
 
           {/* Norma 4: Consideración y Empatía */}
-          <div className="p-4 rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1.5">
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1 sm:space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-blue-100 text-[#002559] font-black text-xs flex items-center justify-center">
+              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-blue-100 text-[#002559] font-black text-[11px] sm:text-xs flex items-center justify-center shrink-0">
                 4
               </span>
-              <span className="font-black text-slate-800">Consideración Mutua y Gratitud</span>
+              <span className="font-black text-xs sm:text-sm text-slate-800">Consideración Mutua y Gratitud</span>
             </div>
-            <p className="text-slate-600 leading-relaxed font-medium">
+            <p className="text-slate-600 leading-relaxed font-medium text-[11px] sm:text-xs">
               Tener consideración entre todos. Dar con cariño e ilusión, y <strong>recibir con gratitud sincera</strong>. El juego es un espacio de unión y compañerismo, sin juzgar gustos ni hacer comparaciones.
             </p>
           </div>
 
           {/* Norma 5: Puntualidad en las 5 Fechas */}
-          <div className="p-4 rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1.5">
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1 sm:space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-cyan-100 text-[#01ACAD] font-black text-xs flex items-center justify-center">
+              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-cyan-100 text-[#01ACAD] font-black text-[11px] sm:text-xs flex items-center justify-center shrink-0">
                 5
               </span>
-              <span className="font-black text-slate-800">Puntualidad en las 5 Fechas</span>
+              <span className="font-black text-xs sm:text-sm text-slate-800">Puntualidad en las 5 Fechas</span>
             </div>
-            <p className="text-slate-600 leading-relaxed font-medium">
+            <p className="text-slate-600 leading-relaxed font-medium text-[11px] sm:text-xs">
               Cumplir puntualmente en los días <strong>01, 03, 10, 15 y 17 de diciembre</strong>. La responsabilidad y puntualidad garantizan que ningún compañero se quede esperando con desilusión mientras otros reciben su detalle.
             </p>
           </div>
 
           {/* Norma 6: Magia y Secreto */}
-          <div className="p-4 rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1.5">
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F4F7FB] border border-slate-200/70 space-y-1 sm:space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-purple-100 text-purple-800 font-black text-xs flex items-center justify-center">
+              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-purple-100 text-purple-800 font-black text-[11px] sm:text-xs flex items-center justify-center shrink-0">
                 6
               </span>
-              <span className="font-black text-slate-800">Secreto Total y Buena Vibra</span>
+              <span className="font-black text-xs sm:text-sm text-slate-800">Secreto Total y Buena Vibra</span>
             </div>
-            <p className="text-slate-600 leading-relaxed font-medium">
+            <p className="text-slate-600 leading-relaxed font-medium text-[11px] sm:text-xs">
               Cero pistas directas que revelen tu identidad antes del <strong>24 de diciembre</strong>. Acompaña cada entrega con notas alegres, dedicatorias cariñosas y mantén viva la magia navideña.
             </p>
           </div>
