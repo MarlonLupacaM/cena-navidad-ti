@@ -39,9 +39,9 @@ export default function Header({ activeTab = 'angel', onTabChange }) {
           {/* Indicador minimalista de estado */}
           {activeTab === 'cena' && (
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/15 shadow-xs self-start sm:self-center text-white">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <Clock className="w-3.5 h-3.5 text-[#01ACAD] shrink-0" />
               <span className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide whitespace-nowrap">
-                Elección de menú abierta
+                Votación cerrada
               </span>
             </div>
           )}
