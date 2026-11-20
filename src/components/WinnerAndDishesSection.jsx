@@ -78,17 +78,14 @@ export default function WinnerAndDishesSection({
             </h2>
           </div>
 
-          <div className="self-start sm:self-center flex items-center gap-2">
-            <span className="bg-slate-100 text-slate-500 border border-slate-200 text-xs font-bold px-3 py-1.5 rounded-full">
-              Votación cerrada
-            </span>
-            {userDishVote && (
+          {userDishVote && (
+            <div className="self-start sm:self-center flex items-center gap-2">
               <div className="bg-[#E8F9F9] border border-[#01ACAD] text-[#002559] px-3 sm:px-3.5 py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-black flex items-center gap-1.5 shadow-2xs">
                 <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#01ACAD] shrink-0" />
                 <span>Ya elegiste: {userDishVote.packageTitle || 'Tu menú'}</span>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Grid de los 4 Paquetes Navideños: 1x1 en móvil y 2x2 en pantallas medianas/grandes */}
@@ -135,24 +132,32 @@ export default function WinnerAndDishesSection({
                   </div>
                 </div>
 
-                {/* Botón de Votación (Deshabilitado) */}
+                {/* Botón de Votación Habilitado */}
                 <div className="mt-5 pt-3 border-t border-slate-100">
                   <button
                     type="button"
-                    disabled
-                    className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 cursor-not-allowed select-none ${
+                    onClick={() => onVoteDishClick(pkg)}
+                    disabled={Boolean(userDishVote)}
+                    className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl font-black text-xs sm:text-sm transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 ${
                       isVotedByMe
-                        ? 'bg-[#E8F9F9] text-[#002559] border border-[#01ACAD]'
-                        : 'bg-slate-100 text-slate-400 border border-slate-200'
+                        ? 'bg-[#01ACAD] text-white cursor-default'
+                        : userDishVote
+                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none'
+                        : 'bg-[#002559] hover:bg-[#001c47] text-white'
                     }`}
                   >
                     {isVotedByMe ? (
                       <>
-                        <CheckCircle2 className="w-4 h-4 text-[#01ACAD]" />
+                        <CheckCircle2 className="w-4 h-4 text-white" />
                         <span>Elegido por ti</span>
                       </>
+                    ) : userDishVote ? (
+                      <span>Votado</span>
                     ) : (
-                      <span>Votación cerrada</span>
+                      <>
+                        <Utensils className="w-3.5 h-3.5 text-[#01ACAD]" />
+                        <span>Votar por este Menú</span>
+                      </>
                     )}
                   </button>
                 </div>
